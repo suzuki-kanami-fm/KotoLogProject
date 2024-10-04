@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<body>
+    <h1>新規登録ページ</h1>
+    <form method="post">
+        {% csrf_token %}
+        <div>
+            名前
+            <input type="text" name="username" value="{{ form.name.value|default:'' }}"> 
+        </div>
+    
+        <div>
+            e-Mail
+            <input type="email" name="email" value="{{ form.name.value|default:'' }}"> 
+        </div>
+        
+        <div>
+            パスワード
+            <input type="password" name="password1" value="{{ form.name.value|default:'' }}"> 
+        </div>
+                
+        <div>
+            確認用パスワード
+            <input type="password" name="password2" value="{{ form.name.value|default:'' }}"> 
+        </div>
+        <button type="submit">登録</button>
+    </form>
+    {{ form.errors }}
+    <a href="{% url 'login' %}">ログインページへ</a>
+{% endblock %}
