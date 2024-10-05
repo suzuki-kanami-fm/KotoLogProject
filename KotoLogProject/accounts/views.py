@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect
 from django.views import View
 from accounts.forms import SignupForm,LoginForm
-from django.contrib.auth import login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import LogoutView
 
 # Create your views here.
 class SignupView(View):
@@ -41,3 +42,5 @@ class LoginView(View):
             "form": form
         }) 
 
+class LogoutView(LogoutView):
+     template_name = "home.html"

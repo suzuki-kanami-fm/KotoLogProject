@@ -6,14 +6,24 @@ from django.contrib.auth import authenticate
 class SignupForm(UserCreationForm):
     class Meta:
         model = User
-        fields = ["username","email","password1","password2"]
+        fields = ["username","account_name","email","password1","password2"]
         
     def clean_email(self):
         email = self.cleaned_data.get('email')
+       
         if User.objects.filter(email=email).exists():
             raise forms.ValidationError("このメールアドレスは既に登録されています。")
+               
         return email
     
+    def clean_account_name(self):
+        account_name = self.cleaned_data.get('account_name')
+                
+        if User.objects.filter(account_name=account_name).exists():
+            raise forms.ValidationError("このアカウント名は既に登録されています。")
+        
+        return account_name
+        
         
 class LoginForm(forms.Form):
     email = forms.EmailField()

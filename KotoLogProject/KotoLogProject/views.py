@@ -10,8 +10,7 @@ class PortfolioView(View):
     def get(self, request):
         return render(request, "portfolio.html")
 
-class HomeView(LoginRequiredMixin, View):
-    login_url = "login"
+class HomeView(View):
     
     def get(self, request):
         return render(request, "home.html")

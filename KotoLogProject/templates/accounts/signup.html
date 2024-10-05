@@ -7,10 +7,17 @@
         <div>
             名前
             <input type="text" name="username" value="{{ form.name.value|default:'' }}"> 
+            <p>※名前は公開されません。</p>
         </div>
-    
+
         <div>
-            e-Mail
+            アカウント名<span>半角英数字のみ</span>
+            <input type="text" name="account_name" value="{{ form.name.value|default:'' }}"> 
+            <p>※アカウント名は育児記録を「全体に公開」に設定した場合に表示されます。</p>
+        </div>
+
+        <div>
+            メールアドレス
             <input type="email" name="email" value="{{ form.name.value|default:'' }}"> 
         </div>
         
@@ -26,5 +33,4 @@
         <button type="submit">登録</button>
     </form>
     {{ form.errors }}
-    <a href="{% url 'accounts:login' %}">ログインページへ</a>
 {% endblock %}

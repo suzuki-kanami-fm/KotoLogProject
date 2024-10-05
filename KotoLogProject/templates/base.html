@@ -14,13 +14,13 @@
         <a class="" href="{% url 'home' %}">KotoLog</a>
         <input type="text" id="search_word" value="検索ボックス"></input>
         {% if user.is_authenticated %}
-        <a class="" href="">ログイン</a>
+            <a class="" href="">編集画面</a>
+            <a class="" href="">アカウント情報</a>
+            <a class="" href="{% url 'accounts:logout' %}">ログアウト</a>        
         {% else %}
-        <a class="" href="">編集画面</a>
-        <a class="" href="">アカウント情報</a>
-        <a class="" href="">ログアウト</a>        
+            <a class="" href="{% url 'accounts:login' %}">ログイン</a>
         {% endif %}
-        </header>
+    </header>
       {% block content %}{% endblock %}
    </body>
 </html>

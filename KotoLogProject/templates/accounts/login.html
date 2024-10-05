@@ -4,7 +4,7 @@
         <form method="post">
         {% csrf_token %}
         <div>
-            e-Mail
+            メールアドレス
             <input type="email" name="email" value="{{ form.email.value|default:'' }}"> 
         </div>
         
