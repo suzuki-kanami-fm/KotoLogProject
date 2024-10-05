@@ -9,7 +9,7 @@ class SignupView(View):
     
     def get(self, request):
         form = SignupForm()
-        return render(request, "signup.html",context={
+        return render(request, "accounts/signup.html",context={
             "form":form
         })
     
@@ -21,7 +21,7 @@ class SignupView(View):
             user = form.save()
             login(request, user)
             return redirect("home")
-        return render(request, "signup.html",context={
+        return render(request, "accounts/signup.html",context={
             "form": form,
         })
     
@@ -29,7 +29,7 @@ class SignupView(View):
 class LoginView(View):
     
     def get(self, request):
-        return render(request, "login.html")
+        return render(request, "accounts/login.html")
     
     def post(self,request):
         form = LoginForm(request.POST)
@@ -37,7 +37,7 @@ class LoginView(View):
             login(request, form.user)
             
             return redirect("home")
-        return render(request, "login.html", context={
+        return render(request, "accounts/login.html", context={
             "form": form
         }) 
 
