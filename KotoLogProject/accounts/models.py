@@ -12,7 +12,7 @@ class User(AbstractUser):
     
     family_id = models.ForeignKey('Family', on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=100)  # 氏名用
-    user_name = models.CharField(max_length=100, unique=True)  #アカウント名用
+    account_name = models.CharField(max_length=100, unique=True)  #アカウント名用
     email = models.EmailField(max_length=255, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
