@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from accounts.forms import SignupForm, LoginForm, UserEditForm, UserPageForm, ChildForm
 from django.contrib.auth import authenticate, login, logout,update_session_auth_hash
@@ -6,27 +6,47 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LogoutView, PasswordChangeView, PasswordChangeDoneView
 from django.contrib.auth.forms import PasswordChangeForm
 from .models import User, Family, Child
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy,reverse
+import uuid
 
 # Create your views here.
 class SignupView(View):
-    
-    def get(self, request):
+    def get(self, request, uuid=None):
         form = SignupForm()
-        return render(request, "accounts/signup.html",context={
-            "form":form
+
+        # UUIDが渡されている場合、家族情報を取得
+        family = None
+        if uuid:
+            family = get_object_or_404(Family, invitation_url__icontains=uuid)
+
+        return render(request, "accounts/signup.html", context={
+            "form": form,
+            "family": family  # 必要に応じてテンプレートで表示
         })
     
-    def post(self,request):
-        print(request.POST)
+    def post(self, request, uuid=None):
         form = SignupForm(request.POST)
-        
+
+        # UUIDから家族情報を取得
+        family = None
+        if uuid:
+            family = get_object_or_404(Family, invitation_url__icontains=uuid)
+
         if form.is_valid():
-            user = form.save()
+            user = form.save(commit=False)
+            
+            # 家族が存在する場合はユーザーに関連付ける
+            if family:
+                user.family_id = family
+            
+            user.save()
             login(request, user)
+
             return redirect("home")
-        return render(request, "accounts/signup.html",context={
+        
+        return render(request, "accounts/signup.html", context={
             "form": form,
+            "family": family 
         })
     
 
@@ -137,8 +157,6 @@ class UserPageView(LoginRequiredMixin, View):
                 'children': children,  # 子ども情報をコンテキストに追加
                 'family': user.family_id,
             })
-        
-    
     
 class CustomPasswordChangeView(PasswordChangeView):
     template_name = 'accounts/password_change.html'
@@ -150,3 +168,23 @@ class CustomPasswordChangeView(PasswordChangeView):
 
 class CustomPasswordChangeDoneView(LoginRequiredMixin,PasswordChangeDoneView):
     template_name = 'accounts/password_change_done.html'
+    
+
+class InvitationUrlView(LoginRequiredMixin, View):
+    
+    def get(self, request):
+        user = request.user
+        family = user.family_id
+
+        # 家族が存在しない場合、エラーを返す
+        if not family:
+            return render(request, 'accounts/user_page.html', {'message': '家族情報が見つかりません。'})
+
+        # signup_with_inviteのURLにUUIDを追加して招待URLを生成
+        invitation_url = request.build_absolute_uri(reverse('accounts:signup_with_invite', kwargs={'uuid': str(uuid.uuid4())}))
+        
+        # 家族に招待URLを保存
+        family.invitation_url = invitation_url
+        family.save()
+
+        return render(request, 'accounts/invitation_url.html', {'invitation_url': invitation_url})

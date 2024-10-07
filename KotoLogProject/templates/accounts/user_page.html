@@ -12,7 +12,7 @@
                 <li>家族情報が登録されていません。</li>
             {% endfor %}
         </ul>
-        <a href="{{ family.invitation_url }}">家族招待URLを発行</a>
+        <a href="{% url 'accounts:invitation_url' %}">家族招待URLを発行</a>
         <h2>子ども情報</h2>
         {{ child_form.non_field_errors }}
         <ul>
