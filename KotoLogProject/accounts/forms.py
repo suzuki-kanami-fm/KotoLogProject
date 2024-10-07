@@ -1,7 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import (
     UserCreationForm, UserChangeForm, PasswordChangeForm)
-from accounts.models import User
+from accounts.models import (
+    User, Child)
 from django.contrib.auth import authenticate
 
 class SignupForm(UserCreationForm):
@@ -66,3 +67,31 @@ class UserPageForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['account_name']
+
+class ChildForm(forms.ModelForm):
+    class Meta:
+        model = Child
+        fields = ['child_name', 'birthday']
+        labels = {
+            'child_name': '子どもの名前',
+            'birthday': '生年月日',
+        }
+        widgets = {
+            'birthday': forms.DateInput(attrs={'type': 'date'}),
+        }
+        
+    def clean(self):
+        cleaned_data = super().clean()
+        child_name = self.cleaned_data.get('child_name')
+        birthday = self.cleaned_data.get('birthday')
+        parent = self.instance  #親を取得
+
+        # familyがあるか確認（複数の家族メンバー間での重複チェック）
+        family = self.instance.family
+
+        # 同じ名前と生年月日がすでに登録されているか確認
+        if Child.objects.filter(child_name=child_name, birthday=birthday, family=family).exists():
+            
+            raise forms.ValidationError('この名前と生年月日の子どもはすでに登録されています。')
+
+        return cleaned_data        

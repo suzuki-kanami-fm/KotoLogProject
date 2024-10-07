@@ -46,7 +46,8 @@ class Family(models.Model):
         return self.invitation_url
 
 class Child(models.Model):
-    family = models.ForeignKey(Family, on_delete=models.CASCADE)
+    family = models.ForeignKey(Family, on_delete=models.CASCADE, null=True, blank=True)
+    parent = models.ForeignKey(User, on_delete=models.CASCADE, related_name="children")
     child_name = models.CharField(max_length=100)
     birthday = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -54,6 +55,7 @@ class Child(models.Model):
 
     class Meta:
         db_table = 'children'
+        unique_together = ('family', 'child_name', 'birthday')
 
     def __str__(self):
-        return self.invitation_url
+        return f'{self.child_name} ({self.birthday})'

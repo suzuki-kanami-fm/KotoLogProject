@@ -1,7 +1,47 @@
-{% extends 'base.html' %}
+{% extends 'common/base.html' %}
 {% block content %}
-<section class="userpage">
+<section id="userpage">
     <h1>ユーザーページ</h1>
-     <p> {{ user.account_name }}<a class="" href="{% url 'accounts:user_edit' %}">編集</a></p>
+    <article id="user_info">
+        <h2> {{ user.account_name }}<a class="" href="{% url 'accounts:user_edit' %}">編集</a></h2>
+        <h2>家族情報</h2>
+        <ul>
+            {% for member in family_members %}
+                <li>{{ member.name }}({{ member.account_name }})</li>
+            {% empty %}
+                <li>家族情報が登録されていません。</li>
+            {% endfor %}
+        </ul>
+        <a href="{{ family.invitation_url }}">家族招待URLを発行</a>
+        <h2>子ども情報</h2>
+        {{ child_form.non_field_errors }}
+        <ul>
+            {% for child in children %}
+                <li>{{ child.child_name }} ({{ child.birthday }}生)</li>
+            {% empty %}
+                <li>子ども情報が登録されていません。</li>
+            {% endfor %}
+        </ul>
+        <button type="button" data-bs-toggle="modal" data-bs-target="#addChildModal">子どもを追加する</button>
+    </article>
 </section>
+
+<!-- 子ども追加モーダルウィンドウ -->
+<div class="modal fade" id="addChildModal" tabindex="-1" aria-labelledby="addChildModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addChildModalLabel">子どもを追加する</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="POST">
+          {% csrf_token %}
+          {{ child_form.as_p }}
+          <button type="submit" name="add_child" class="btn btn-primary">追加</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
