@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="useredit">
+    <h1>ユーザー情報編集ページ</h1>
+    <form method="post">
+        {% csrf_token %}
+        <div>
+            名前
+            <input type="text" name="username" value="{{ user.username }}"> 
+            <p>※名前は公開されません。</p>
+            {{ form.username.errors}}
+        </div>
+
+        <div>
+            アカウント名<span>半角英数字のみ</span>
+            <input type="text" name="account_name" value="{{ user.account_name }}"> 
+            <p>※アカウント名は育児記録を「全体に公開」に設定した場合に表示されます。</p>
+            {{ form.account_name.errors}}
+        </div>
+
+        <div>
+            メールアドレス
+            <input type="email" name="email" value="{{ user.email }}"> 
+            {{ form.email.errors}}
+        </div>
+        <button type="submit">変更</button>
+        <a href="{% url "accounts:password_change" %}">パスワード変更</a>
+    </form>
+</section>
+{% endblock %}

@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="userpage">
+    <h1>ユーザーページ</h1>
+     <p> {{ user.account_name }}<a class="" href="{% url 'accounts:user_edit' %}">編集</a></p>
+</section>
+{% endblock %}
