@@ -11,15 +11,15 @@ class User(AbstractUser):
     groups = None
     user_permissions = None
     
-    family_id = models.ForeignKey('Family', on_delete=models.CASCADE, null=True, blank=True)
-    name = models.CharField(max_length=100)  # 氏名用
+    family = models.ForeignKey('Family', on_delete=models.CASCADE, null=True, blank=True)
+    username = models.CharField(max_length=100)  # 氏名用
     account_name = models.CharField(
         max_length=100, 
         unique=True,
         validators=[
             RegexValidator(
-                regex='^[a-zA-Z0-9]+$',
-                message='半角英数字のみ入力してください',
+                regex='^@?[a-zA-Z0-9]+$',
+                message='@で始まり、半角英数字のみ入力してください',
                 code='invalid_alphanumeric'
             )
         ]
@@ -28,11 +28,11 @@ class User(AbstractUser):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
-    USERNAME_FIELD = "username"
+    USERNAME_FIELD = "account_name" 
     EMAIL_FIELD = "email"
     REQUIRED_FIELDS = ["email"]
     
-from django.db import models
+
 
 class Family(models.Model):
     invitation_url = models.CharField(max_length=255)

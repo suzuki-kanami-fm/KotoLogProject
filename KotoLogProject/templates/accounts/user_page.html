@@ -7,7 +7,7 @@
         <h2>家族情報</h2>
         <ul>
             {% for member in family_members %}
-                <li>{{ member.name }}({{ member.account_name }})</li>
+                <li>{{ member.username }}({{ member.account_name }})</li>
             {% empty %}
                 <li>家族情報が登録されていません。</li>
             {% endfor %}
