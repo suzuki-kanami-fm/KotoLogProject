@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
+from django.utils import timezone
+from datetime import timedelta,datetime
+import uuid
 
 # Create your models here.
 
@@ -33,21 +36,48 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ["email"]
     
 
-
 class Family(models.Model):
-    invitation_url = models.CharField(max_length=255)
+    # 複数の招待URLをJSONで管理
+    invitations = models.JSONField(default=list, blank=True)  # [{uuid: UUID, expiry: datetime, used: False}, ...]
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         db_table = 'families'
 
     def __str__(self):
-        return self.invitation_url
+        return f"Family: {self.id}"
+
+    def generate_invitation(self):
+        #新しい招待URLを生成し、1時間の有効期限を設定
+        new_invitation = {
+            'uuid': str(uuid.uuid4()),
+            'expiry': (timezone.now() + timedelta(hours=1)).isoformat(),
+            'used': False
+        }
+        self.invitations.append(new_invitation)
+        self.save()
+        return new_invitation
+
+    def validate_invitation(self, uuid):
+        #指定されたUUIDが有効かどうか確認
+        for invitation in self.invitations:
+            if invitation['uuid'] == str(uuid):
+                expiry = datetime.fromisoformat(invitation['expiry'])
+                
+                if not invitation['used'] and expiry > timezone.now():
+                    return True
+        return False
+
+    def use_invitation(self, uuid):
+        #招待URLを使用済みにする
+        for invitation in self.invitations:
+            if invitation['uuid'] == str(uuid):
+                invitation['used'] = True
+        self.save()
 
 class Child(models.Model):
     family = models.ForeignKey(Family, on_delete=models.CASCADE, null=True, blank=True)
-    parent = models.ForeignKey(User, on_delete=models.CASCADE, related_name="children")
     child_name = models.CharField(max_length=100)
     birthday = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
