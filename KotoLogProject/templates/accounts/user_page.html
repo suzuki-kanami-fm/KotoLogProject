@@ -14,7 +14,13 @@
         <h2>家族情報</h2>
         <ul>
             {% for member in family_members %}
-                <li>{{ member.username }}({{ member.account_name }})</li>
+                <li>{{ member.username }}({{ member.account_name }})
+                    <form method="post" action="{% url 'accounts:family_delete' %}" onsubmit="return confirmDelete('{{ member.username }}')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">家族から削除</button>
+                    </form>                
+                </li>
+                
             {% empty %}
                 <li>家族情報が登録されていません。</li>
             {% endfor %}
@@ -24,7 +30,12 @@
         {{ child_form.non_field_errors }}
         <ul>
             {% for child in children %}
-                <li>{{ child.child_name }} ({{ child.birthday }}生)</li>
+                <li>{{ child.child_name }} ({{ child.birthday }}生)
+                  <form method="post" action="{% url 'accounts:child_delete' child.id %}" onsubmit="return confirmDelete('{{ child.child_name }}')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">削除</button>
+                   </form>
+                </li>
             {% empty %}
                 <li>子ども情報が登録されていません。</li>
             {% endfor %}
@@ -51,4 +62,9 @@
     </div>
   </div>
 </div>
+<script>
+    function confirmDelete(item) {
+        return confirm(item + 'を本当に削除しますか？');
+    }
+</script>
 {% endblock %}

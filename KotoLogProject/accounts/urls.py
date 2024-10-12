@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     SignupView, LoginView, LogoutView, UserEditView,UserPageView ,
     CustomPasswordChangeView, CustomPasswordChangeDoneView,
-    InvitationUrlView,)
+    InvitationUrlView,FamilyDeleteView,ChildDeleteView)
 
 app_name='accounts'
 urlpatterns = [
@@ -15,4 +15,6 @@ urlpatterns = [
     path("password_change/", CustomPasswordChangeView.as_view(), name="password_change"),
     path("password_change/done/", CustomPasswordChangeDoneView.as_view(), name="password_change_done"),
     path("invitation_url/", InvitationUrlView.as_view(), name="invitation_url"),
+    path('family/delete/', FamilyDeleteView.as_view(), name='family_delete'),
+    path('child/delete/<int:child_id>/', ChildDeleteView.as_view(), name='child_delete'),
 ]

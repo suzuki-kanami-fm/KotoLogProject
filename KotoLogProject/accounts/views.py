@@ -226,3 +226,37 @@ class InvitationUrlView(LoginRequiredMixin, View):
         invitation_url = request.build_absolute_uri(reverse('accounts:signup_with_invite', kwargs={'uuid': invitation['uuid']}))
         
         return render(request, 'accounts/invitation_url.html', {'invitation_url': invitation_url})
+    
+class FamilyDeleteView(LoginRequiredMixin, View):
+
+    def post(self, request):
+        # 現在のユーザーが所属するfamilyを取得
+        family = request.user.family
+
+        # 同じfamilyを持つユーザーの数をカウント
+        family_members_count = User.objects.filter(family=family).count()
+
+        # 家族情報を削除できるのは、familyのユーザーが2人以上いる場合のみ
+        if family_members_count > 1:
+            # 現在のユーザーのfamilyキーをNullに更新
+            request.user.family = None
+            request.user.save()
+            messages.success(request, '家族情報を削除しました。')
+        else:
+            messages.error(request, '1人しかいない場合、家族情報は削除できません。')
+
+        return redirect('accounts:user_page')
+
+class ChildDeleteView(LoginRequiredMixin, View):
+
+    def post(self, request, child_id):
+        # 子ども情報を削除
+        child = get_object_or_404(Child, id=child_id, family=request.user.family)
+
+        try:
+            child.delete()
+            messages.success(request, '子ども情報が削除されました。')
+        except Exception as e:
+            messages.error(request, '子ども情報の削除に失敗しました。')
+
+        return redirect('accounts:user_page')     
