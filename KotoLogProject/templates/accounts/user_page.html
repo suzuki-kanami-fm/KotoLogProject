@@ -3,6 +3,13 @@
 <section id="userpage">
     <h1>ユーザーページ</h1>
     <article id="user_info">
+    {% if messages %}
+      <div class="alert alert-success">
+          {% for message in messages %}
+              <p>{{ message }}</p>
+          {% endfor %}
+      </div>
+    {% endif %}
         <h2> {{ user.account_name }}<a class="" href="{% url 'accounts:user_edit' %}">編集</a></h2>
         <h2>家族情報</h2>
         <ul>
