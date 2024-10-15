@@ -17,12 +17,18 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from . import settings
-from .views import PortfolioView,HomeView
+from .views import PortfolioView
 from accounts.views import LoginView
+from journals.views import HomeView
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', PortfolioView.as_view(), name="portfolio"),
     path('home/', HomeView.as_view(), name="home"),
     path('accounts/', include('accounts.urls')),
+    path('journals/', include('journals.urls')),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root= settings.MEDIA_ROOT)

@@ -1,0 +1,12 @@
+{% extends 'common/base.html' %}
+{% block content %}
+<section id="create_childcare_journal">
+    <h1>育児記録の作成</h1>
+    
+    <form method="POST" action="" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">保存</button>
+    </form>
+</section>
+{% endblock %}

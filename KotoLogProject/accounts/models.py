@@ -88,4 +88,4 @@ class Child(models.Model):
         unique_together = ('family', 'child_name', 'birthday')
 
     def __str__(self):
-        return f'{self.child_name} ({self.birthday})'
+        return self.child_name

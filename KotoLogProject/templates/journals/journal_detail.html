@@ -1,0 +1,75 @@
+<!-- 育児記録詳細表示モーダルウィンドウ -->
+    {% if messages %}
+      <div class="alert alert-success">
+          {% for message in messages %}
+              <p>{{ message }}</p>
+          {% endfor %}
+      </div>      
+    {% endif %}
+<div class="modal fade" id="journalModal" tabindex="-1" aria-labelledby="journalModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="閉じる"></button>
+            </div>
+            <div class="modal-body">
+                <h2 id="modal-title"></h2>
+                <p id="modal-content"></p>
+                <img id="modal-image" src="" alt="Journal Image" style="display: none; max-width: 100%;">
+            </div>
+            <div class="modal-footer">
+                <form method="POST">
+                    {% csrf_token %}
+                    {% if is_favorite %}
+                        <button type="submit" name="remove_from_favorites" id="favorite-btn">お気に入りから削除</button>
+                    {% else %}
+                        <button type="submit" name="add_to_favorites" id="favorite-btn">お気に入りに登録</button>
+                    {% endif %}
+                </form>
+                <!-- 編集ボタンのリンクを動的に設定する -->
+                <a href="#" id="edit_button">編集</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const journalModal = document.getElementById("journalModal");
+
+    // Bootstrapモーダルイベントをリッスン
+    journalModal.addEventListener('show.bs.modal', function (event) {
+        // モーダルを開くリンク要素
+        const button = event.relatedTarget;
+        const journalId = button.getAttribute('data-id');  // 記録のIDを取得
+
+        // Ajaxで詳細データを取得
+        fetch(`/journals/journal_detail/${journalId}/`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("modal-title").textContent = data.title;
+                document.getElementById("modal-content").textContent = data.content;
+
+                if (data.image_url) {
+                    const imageElement = document.getElementById("modal-image");
+                    imageElement.src = data.image_url;
+                    imageElement.style.display = 'block';
+                }
+
+                // お気に入りボタンのテキストを設定
+                const favoriteBtn = document.getElementById("favorite-btn");
+                favoriteBtn.textContent = data.is_favorited ? "お気に入り解除" : "お気に入り追加";
+
+                // 編集ボタンの表示制御とリンク設定
+                const editBtn = document.getElementById("edit_button");
+                if (data.is_owner) {
+                    editBtn.style.display = "inline";
+                    // 動的に編集リンクを設定
+                    editBtn.href = `/journals/edit_childcare_journal/${journalId}/`;
+                } else {
+                    editBtn.style.display = "none";
+                }
+            });
+    });
+});
+</script>
