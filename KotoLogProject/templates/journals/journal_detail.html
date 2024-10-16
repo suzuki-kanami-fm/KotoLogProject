@@ -18,58 +18,90 @@
                 <img id="modal-image" src="" alt="Journal Image" style="display: none; max-width: 100%;">
             </div>
             <div class="modal-footer">
-                <form method="POST">
+                <form method="POST" id="favoriteForm" action="">
                     {% csrf_token %}
-                    {% if is_favorite %}
-                        <button type="submit" name="remove_from_favorites" id="favorite-btn">お気に入りから削除</button>
-                    {% else %}
-                        <button type="submit" name="add_to_favorites" id="favorite-btn">お気に入りに登録</button>
-                    {% endif %}
+                    <button type="submit" name="favorite_action" id="favorite-btn"></button>
                 </form>
                 <!-- 編集ボタンのリンクを動的に設定する -->
-                <a href="#" id="edit_button">編集</a>
+                <a href="#" id="edit-btn">編集</a>
             </div>
         </div>
     </div>
 </div>
-
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const journalModal = document.getElementById("journalModal");
+$(document).ready(function() {
+    const journalModal = $('#journalModal');
 
-    // Bootstrapモーダルイベントをリッスン
-    journalModal.addEventListener('show.bs.modal', function (event) {
-        // モーダルを開くリンク要素
-        const button = event.relatedTarget;
-        const journalId = button.getAttribute('data-id');  // 記録のIDを取得
+    journalModal.on('show.bs.modal', function(event) {
+        const button = $(event.relatedTarget); // モーダルをトリガーしたボタン
+        const journalId = button.data('id'); // 育児記録のIDを取得
+        $('#favoriteForm').attr('action', `/journals/journal_detail/${journalId}/`);
 
         // Ajaxで詳細データを取得
-        fetch(`/journals/journal_detail/${journalId}/`)
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById("modal-title").textContent = data.title;
-                document.getElementById("modal-content").textContent = data.content;
+        $.ajax({
+            url: `/journals/journal_detail/${journalId}/`,
+            method: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                // モーダル内の要素にデータをセット
+                $('#modal-title').text(data.title);
+                $('#modal-content').text(data.content);
 
                 if (data.image_url) {
-                    const imageElement = document.getElementById("modal-image");
-                    imageElement.src = data.image_url;
-                    imageElement.style.display = 'block';
-                }
-
-                // お気に入りボタンのテキストを設定
-                const favoriteBtn = document.getElementById("favorite-btn");
-                favoriteBtn.textContent = data.is_favorited ? "お気に入り解除" : "お気に入り追加";
-
-                // 編集ボタンの表示制御とリンク設定
-                const editBtn = document.getElementById("edit_button");
-                if (data.is_owner) {
-                    editBtn.style.display = "inline";
-                    // 動的に編集リンクを設定
-                    editBtn.href = `/journals/edit_childcare_journal/${journalId}/`;
+                    $('#modal-image').attr('src', data.image_url).show();
                 } else {
-                    editBtn.style.display = "none";
+                    $('#modal-image').hide();
                 }
-            });
+
+                const favoriteBtn = $('#favorite-btn');
+                if(data.is_favorited ){
+                    favoriteBtn.text("お気に入り解除");
+                    favoriteBtn.attr('name', 'remove_from_favorites'); // ボタンのname属性を設定
+                }else{
+                    favoriteBtn.text("お気に入り登録");
+                    favoriteBtn.attr('name', 'add_to_favorites'); // ボタンのname属性を設定
+                }             
+
+                const editBtn = $('#edit-btn');
+                if (data.is_owner) {
+                    editBtn.show();
+                    editBtn.attr ('href', `/journals/edit_childcare_journal/${journalId}/`);
+                } else {
+                    editBtn.hide();
+                }
+
+                // お気に入りボタンのクリックイベント
+                $('#favoriteForm').off('submit').on('submit', function(event) {
+                    event.preventDefault(); // デフォルトのフォーム送信を防ぐ
+
+                    const formData = new FormData();
+                    formData.append('csrfmiddlewaretoken', $('input[name="csrfmiddlewaretoken"]').val());  // CSRFトークンを追加
+                    formData.append(favoriteBtn.attr('name'), 'true');
+
+                    // AjaxでPOSTリクエストを送信
+                    $.ajax({
+                        url: `/journals/journal_detail/${journalId}/`,
+                        method: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function(result) {
+                            if (result.success) {
+                                favoriteBtn.text(result.is_favorited ? "お気に入り解除" : "お気に入り追加");
+                                alert(result.message);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error:', error);
+                        }
+                    });
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+                console.error('Response:', xhr.responseText); // レスポンス内容を表示
+            }
+        });
     });
 });
 </script>

@@ -10,6 +10,7 @@ from accounts.models import User,Child
 from django.db.models import Prefetch, Count, Case, When, Value, BooleanField
 from django.utils import timezone
 from django.contrib import messages
+import re
 
 ## 共通関数 ##
 
@@ -82,15 +83,11 @@ class EditChildcareJournalView(View):
 
 class ChildcareJournalDetailView(View):
     
-    def get(self, request, journal_id):  # 引数名を変更
-        # 育児記録の詳細を取得
+    def get(self, request, journal_id):  
         journal = get_object_or_404(ChildcareJournal, pk=journal_id)
-        
-        # 閲覧回数を更新する
         journal.impression_count += 1
         journal.save(update_fields=['impression_count']) 
-        
-        # ユーザが閲覧した育児記録を保存する
+
         if request.user.is_authenticated:
             access_log = ChildcareJournalAccessLog(
                 user=request.user,
@@ -104,24 +101,28 @@ class ChildcareJournalDetailView(View):
             'content': journal.content,
             'published_on': journal.published_on.strftime('%Y-%m-%d'),
             'is_public': journal.is_public,
-            'image_url': journal.image_url.url if journal.image_url else None,  # 画像URLを追加
-            'is_owner': journal.user == request.user,  # 作成者と現在のユーザーが一致するかどうか
+            'image_url': journal.image_url.url if journal.image_url else None,
+            'is_owner': journal.user == request.user,
+            'is_favorited': Favorite.objects.filter(user=request.user, childcare_journal=journal).exists(),
         }
         return JsonResponse(data)
-    
+
     def post(self, request, journal_id):
         journal = get_object_or_404(ChildcareJournal, id=journal_id)
-        
-        # "お気に入りに登録" 
+
         if 'add_to_favorites' in request.POST:
             if not Favorite.objects.filter(user=request.user, childcare_journal=journal).exists():
                 Favorite.objects.create(user=request.user, childcare_journal=journal)
-                messages.success(request, "育児記録をお気に入りに登録しました。")
+                return JsonResponse({'success': True, 'message': "育児記録をお気に入りに登録しました。", 'is_favorited': True})
             else:
-                messages.info(request, "すでにお気に入りに登録されています。")
+                return JsonResponse({'success': False, 'message': "すでにお気に入りに登録されています。"})
         
-        return redirect('journal_detail', journal_id=journal.id)
-
+        if 'remove_from_favorites' in request.POST:
+            Favorite.objects.filter(user=request.user, childcare_journal=journal).delete()
+            return JsonResponse({'success': True, 'message': "お気に入りを解除しました。", 'is_favorited': False})
+        
+        return JsonResponse({'success': False, 'message': "処理に失敗しました。"})
+    
 class HomeView(View):
     def get(self, request):
         
