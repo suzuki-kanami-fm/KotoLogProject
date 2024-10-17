@@ -6,10 +6,12 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LogoutView, PasswordChangeView, PasswordChangeDoneView
 from django.contrib.auth.forms import PasswordChangeForm
 from .models import User, Family, Child
+from journals.models import ChildcareJournalAccessLog,ChildcareJournal,Favorite
 from django.urls import reverse_lazy,reverse
 import uuid
 from django.contrib import messages
 from django.db import transaction
+from django.db.models import Prefetch, Count, Case, When, Value, BooleanField,Max,OuterRef, Subquery
 
 class SignupView(View):
     
@@ -101,7 +103,6 @@ class LoginView(View):
 class LogoutView(LoginRequiredMixin, LogoutView):
      template_name = "common/home.html"
 
-
 class UserEditView(LoginRequiredMixin, View):
     
     def get(self, request):
@@ -126,22 +127,53 @@ class UserEditView(LoginRequiredMixin, View):
         context['password_change_form'] = PasswordChangeForm(user=self.request.user)
         return context    
 
-
 class UserPageView(LoginRequiredMixin, View):
     
     def get(self, request):
         user = request.user
         form = UserPageForm(instance=user)
-        
-        # 家族情報と子ども情報を取得
-        family = user.family
-        
+               
         # 家族が存在する場合は家族情報と子ども情報を取得
-        if family:
-            family_members = User.objects.filter(family=family).exclude(id=user.id)
-            children = Child.objects.filter(family=family).order_by('birthday')
-        else:
-            family_members, children = [], []        
+        family, family_members, children = self.get_family_info(user)    
+
+        # 最近見た育児記録の最新のアクセス時間を持つレコードを取得
+        latest_recent_journals = (
+            ChildcareJournalAccessLog.objects
+            .filter(user=user)
+            .values('childcare_journal_id')  # 各育児記録ごとにグループ化
+            .annotate(latest_accessed=Max('accessed_at'))  # 最新のアクセス時間を取得
+        )
+
+        # 最近見た育児記録のクエリセットを生成
+        recent_journal_objects = (
+            ChildcareJournal.objects
+            .filter(id__in=Subquery(latest_recent_journals.values('childcare_journal_id')))  # 最新のアクセスがある育児記録を絞り込み
+            .annotate(
+                latest_accessed=Subquery(
+                    latest_recent_journals.filter(
+                        childcare_journal_id=OuterRef('id')
+                    ).values('latest_accessed')[:1]  # その育児記録の最新のアクセス日時を取得
+                ),
+                is_favorite=Case(
+                    When(favorite__user=user, then=Value(True)),
+                    default=Value(False),
+                    output_field=BooleanField()
+                )
+            )
+            .order_by('-latest_accessed')  # 最新のアクセス時間順に並べ替え
+            .select_related('child')[:10]  # 必要な関連データを一緒に取得
+        )
+
+                
+        # ユーザが作成した育児記録を取得
+        user_created_journals = ChildcareJournal.objects.filter(user=user).order_by('-published_on').annotate(
+            is_favorite=Case(
+                When(favorite__user=user, then=Value(True)),
+                default=Value(False),
+                output_field=BooleanField()
+            )
+        ).select_related('child')[:10]
+        
 
         child_form = ChildForm()
 
@@ -149,10 +181,12 @@ class UserPageView(LoginRequiredMixin, View):
         context = {
             'form': form,
             'user': user,
+            'family': family,
             'family_members': family_members,
             'children': children,  
             'child_form': child_form,
-            'family': family,
+            'recent_journal_objects': recent_journal_objects, 
+            'user_created_journals': user_created_journals,
         }
         return render(request, "accounts/user_page.html", context)
 
@@ -183,11 +217,7 @@ class UserPageView(LoginRequiredMixin, View):
                     child_form.add_error(None, 'エラーが発生しました。再度お試しください。')
                                         
             # 家族が存在する場合は家族情報と子ども情報を取得
-            if user.family:
-                family_members = User.objects.filter(family=user.family).exclude(id=user.id)
-                children = Child.objects.filter(family=user.family).order_by('birthday')
-            else:
-                family_members, children = [], []  
+            family, family_members, children = self.get_family_info(user)
                 
             return render(request, 'accounts/user_page.html', {
                 'form': form,
@@ -195,6 +225,16 @@ class UserPageView(LoginRequiredMixin, View):
                 'children': children,
                 'family': user.family,
             })
+
+    # 家族情報と子ども情報の取得を行う
+    def get_family_info(self, user):
+        family = user.family
+        if family:
+            family_members = User.objects.filter(family=family).exclude(id=user.id)
+            children = Child.objects.filter(family=family).order_by('birthday')
+        else:
+            family_members, children = [], []
+        return family, family_members, children
     
 class CustomPasswordChangeView(PasswordChangeView):
     template_name = 'accounts/password_change.html'

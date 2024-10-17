@@ -18,7 +18,6 @@ from django.contrib import admin
 from django.urls import path, include
 from . import settings
 from .views import PortfolioView
-from accounts.views import LoginView
 from journals.views import HomeView
 from django.conf.urls.static import static
 

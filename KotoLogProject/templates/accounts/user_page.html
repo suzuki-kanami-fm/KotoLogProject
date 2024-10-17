@@ -43,6 +43,44 @@
         <button type="button" data-bs-toggle="modal" data-bs-target="#addChildModal">子どもを追加する</button>
     </article>
 </section>
+<section id="account_journals">
+  <h2>最近見た育児記録</h2>
+  <ul>
+    <div id="recentedCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <div class="row">
+                    {% for journal in recent_journal_objects %}
+                        {% include 'journals/childcare_journal_card.html' %}
+                    {% empty %}
+                        <li>最近見た育児記録はありません。</li>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+  </ul>
+
+<h2>作成した育児記録</h2>
+  <ul>
+    <div id="createdCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <div class="row">
+                    {% for journal in user_created_journals %}
+                        {% include 'journals/childcare_journal_card.html' %}
+                    {% empty %}
+                        <li>作成した育児記録はありません。</li>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+  </ul>
+</section>
+
+  <!-- 詳細表示モーダルテンプレートの読み込み -->
+    {% include 'journals/journal_detail.html' %}
 
 <!-- 子ども追加モーダルウィンドウ -->
 <div class="modal fade" id="addChildModal" tabindex="-1" aria-labelledby="addChildModalLabel" aria-hidden="true">

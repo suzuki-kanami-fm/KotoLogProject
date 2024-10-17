@@ -4,7 +4,7 @@ from django.views import View
 from .forms import ChildcareJournalForm
 from .models import (
     ChildcareJournal, Hashtag, 
-    ChildcareJournalHashtag,Favorite,
+    ChildcareJournalHashtag, Favorite,
     ChildcareJournalAccessLog)
 from accounts.models import User,Child
 from django.db.models import Prefetch, Count, Case, When, Value, BooleanField

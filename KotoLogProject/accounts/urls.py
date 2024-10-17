@@ -1,6 +1,5 @@
 from django.urls import path
-from .views import (
-    SignupView, LoginView, LogoutView, UserEditView,UserPageView ,
+from .views import (SignupView, LoginView, LogoutView, UserEditView,UserPageView ,
     CustomPasswordChangeView, CustomPasswordChangeDoneView,
     InvitationUrlView,FamilyDeleteView,ChildDeleteView)
 
