@@ -8,10 +8,11 @@ from django.contrib.auth.forms import PasswordChangeForm
 from .models import User, Family, Child
 from journals.models import ChildcareJournalAccessLog,ChildcareJournal,Favorite
 from django.urls import reverse_lazy,reverse
-import uuid
+import uuid,json
 from django.contrib import messages
 from django.db import transaction
 from django.db.models import Prefetch, Count, Case, When, Value, BooleanField,Max,OuterRef, Subquery
+from django.core.serializers.json import DjangoJSONEncoder
 
 class SignupView(View):
     
@@ -136,6 +137,23 @@ class UserPageView(LoginRequiredMixin, View):
         # 家族が存在する場合は家族情報と子ども情報を取得
         family, family_members, children = self.get_family_info(user)    
 
+        # カレンダー表示用のクエリを発行
+        if family:
+            family_members = User.objects.filter(family=family)
+            
+            records_by_date = ChildcareJournal.objects.filter(user__in=family_members).values('published_on').annotate(
+                record_count=Count('id')).order_by('published_on')
+            records_by_date = [
+                {
+                    'date': record['published_on'].strftime('%Y-%m-%d'),
+                    'count': record['record_count']
+                }
+                for record in records_by_date
+            ]
+        else:
+            records_by_date = []
+
+
         # 最近見た育児記録の最新のアクセス時間を持つレコードを取得
         latest_recent_journals = (
             ChildcareJournalAccessLog.objects
@@ -187,6 +205,7 @@ class UserPageView(LoginRequiredMixin, View):
             'child_form': child_form,
             'recent_journal_objects': recent_journal_objects, 
             'user_created_journals': user_created_journals,
+            'records_by_date': json.dumps(records_by_date, cls=DjangoJSONEncoder),
         }
         return render(request, "accounts/user_page.html", context)
 

@@ -4,3 +4,14 @@ body{
 header{
     background:#97cee5;
 }
+
+#userpage #account_journals #calendar{
+    .fc-daygrid-day-number a {
+        color: blue;  /* 青文字リンク */
+        text-decoration: underline;  /* 下線付き */
+    }
+    .fc-col-header-cell-cushion,.fc-daygrid-day-number {
+        color: black;  /* 黒文字（リンクではない日付） */
+        text-decoration: none;
+    }
+}
