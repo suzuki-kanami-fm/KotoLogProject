@@ -18,10 +18,14 @@
     </head>
    <body>
    <header>
-        <a class="" href="{% url 'home' %}">KotoLog</a>
-        <input type="text" id="search_word" value="検索ボックス"></input>
+        <a class="" href="{% url 'home' %}"><img src="{% static "img/kotolog.png" %}" alt="KotoLog"></a>
+        <form action="{% url 'journals:childcare_journal_list' %}" method="GET">
+            <input type="text" name="search_query" placeholder="Search..." />
+            <button type="submit">Search</button>
+        </form>
         {% if user.is_authenticated %}
             <a class="" href="{% url 'journals:create_childcare_journal' %}">編集画面</a>
+            <a href="{% url 'journals:childcare_journal_list' %}?favorites=true">お気に入り</a>
             <a class="" href="{% url 'accounts:user_page' %}">アカウント情報</a>
             <form method="post" action="{% url 'accounts:logout' %}">
             {% csrf_token %}

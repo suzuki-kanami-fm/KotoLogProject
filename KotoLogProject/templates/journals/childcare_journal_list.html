@@ -1,16 +1,29 @@
 {% extends 'common/base.html' %}
 {% block content %}
-<section id="childcare_journal_list">
-    <ul>
-        {% for record in records %}
-            <li>
-                <strong>{{ record.title }}</strong> - {{ record.published_on }}
-                <p>{{ record.content|truncatewords:20 }}</p>  <!-- 20単語にトランケート -->
-                <a href="{% url 'childcare_journal_detail' record.id %}">詳細を見る</a>
-            </li>
-        {% empty %}
-            <li>記録がありません。</li>
-        {% endfor %}
-    </ul>
-</section>
+{% if childcare_journals.exists %}
+    <div id="journalsCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <div class="row">
+                        {% for journal in childcare_journals %}
+                            {% include 'journals/childcare_journal_card.html' %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#journalsCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon"></span>
+                <span class="visually-hidden">前へ</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#journalsCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon"></span>
+                <span class="visually-hidden">次へ</span>
+            </button>
+    </div>
+{% else %}
+    <p>育児記録が見つかりません。</p>
+{% endif %}
+  <!-- モーダルテンプレートの読み込み -->
+    {% include 'journals/journal_detail.html' %}
 {% endblock %}
+

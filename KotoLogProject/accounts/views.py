@@ -15,77 +15,99 @@ from django.db.models import Prefetch, Count, Case, When, Value, BooleanField,Ma
 from django.core.serializers.json import DjangoJSONEncoder
 
 class SignupView(View):
-    
+
     def get(self, request, uuid=None):
-        # UUIDが渡されている場合、対応するFamilyを取得
         family = None
+        
+        # UUIDが渡されている場合、対応するFamilyを取得
         if uuid:
-            family = get_object_or_404(Family)
+            families = Family.objects.all()  # 全てのFamilyを取得
 
-            # invitationsから手動でUUIDを検索する
-            if not family.validate_invitation(uuid):
+            # 手動で invitations の中から該当するUUIDを探す
+            for fam in families:
+                for invitation in fam.invitations:
+                    if invitation['uuid'] == str(uuid) and not invitation['used']:
+                        family = fam
+                        break
+
+            # 該当するFamilyが見つからなかった場合
+            if not family:
                 messages.error(request, 'この招待URLは無効です。新しい招待URLを発行してください。')
-                
-                # 無効な場合はホーム画面にリダイレクト
-                return redirect('home')  
+                return redirect('home')  # 無効な場合はホーム画面にリダイレクト
 
-        # 既にユーザーがログインしている場合、家族登録を実行
+        # 既にユーザーがログインしている場合
         if request.user.is_authenticated:
             if family:
-                if not request.user.family:
-                    request.user.family = family
-                    request.user.save()
-                    
-                    messages.success(request, '家族登録が完了しました！')
-                else:
-                    messages.success(request, '家族登録済みのユーザーです。')
+                
+                # 自分自身を家族登録しようとしていないかチェック
+                if request.user in User.objects.filter(family=family):
+                    messages.error(request, "既に家族に所属しています。")
+                    return redirect('accounts:user_page')
+                
+                # ログイン済みユーザーを家族に追加
+                request.user.family = family
+                request.user.save()
 
                 # 招待URLを使用済みにする
-                family.use_invitation(uuid)                        
-                
+                family.use_invitation(uuid)
+
+                messages.success(request, '家族登録が完了しました！')
                 return redirect('accounts:user_page')
+
+        # 未ログインの場合はログインページにリダイレクトし、ログイン後に家族登録を再度実行
         else:
-            messages.info(request, 'ログインしてから家族登録を完了してください。')
-            login_url = f"{reverse('accounts:login')}?next={request.path}"
+            # ログイン後に戻るための next パラメータを追加
+            login_url = reverse('accounts:login') + f'?next={request.path}'
             return redirect(login_url)
-        
-        # 未ログインの場合、サインアップフォームを表示
+
+        # サインアップ画面を表示（未ログインの場合のみ）
         form = SignupForm()
         return render(request, "accounts/signup.html", context={"form": form})
 
-    @transaction.atomic  # 招待URL発行の競合を防ぐ
     def post(self, request, uuid=None):
         form = SignupForm(request.POST)
-
-        # UUIDから家族情報を取得
         family = None
-        if uuid:
-            family = get_object_or_404(Family)
 
-            # UUIDが有効かどうかチェック
-            if not family.validate_invitation(uuid):
+        # UUIDが渡されている場合、対応するFamilyを取得
+        if uuid:
+            families = Family.objects.all()  # 全てのFamilyを取得
+
+            # 手動で invitations の中から該当するUUIDを探す
+            for fam in families:
+                for invitation in fam.invitations:
+                    if invitation['uuid'] == str(uuid) and not invitation['used']:
+                        family = fam
+                        break
+
+            # 該当するFamilyが見つからなかった場合
+            if not family:
                 messages.error(request, 'この招待URLは無効です。新しい招待URLを発行してください。')
                 return redirect('home')  # 無効な場合はホーム画面にリダイレクト
+
+        # 既に家族に所属しているユーザーを防ぐ
+        if request.user.is_authenticated and request.user.family:
+            messages.error(request, "既に家族に所属しています。")
+            return redirect('home')
 
         # 新規登録の場合
         if form.is_valid():
             user = form.save(commit=False)
-            
+
             # 家族が存在する場合はユーザーに関連付ける
             if family:
-                user.family = family       
-
-                # 招待URLを使用済みにする
+                user.family = family
                 family.use_invitation(uuid)
-                    
+
             user.save()
+
             # ユーザーをログインさせる
             login(request, user)
 
-            return redirect("home")
+            return redirect('home')
 
         return render(request, "accounts/signup.html", context={"form": form})
-
+    
+    
 class LoginView(View):
     
     def get(self, request):

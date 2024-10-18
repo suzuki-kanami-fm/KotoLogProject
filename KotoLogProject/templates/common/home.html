@@ -11,6 +11,7 @@
     {% endif %}
     <section class="mb-4">
         <h2>最近のKotoLog</h2>
+        <a href="{% url 'journals:childcare_journal_list' %}?segment=public">すべて見る</a>
         <div id="recentCarousel" class="carousel slide" data-bs-ride="carousel">
             <div class="carousel-inner">
                 <div class="carousel-item active">
@@ -49,6 +50,7 @@
         {% if request.user.family %}
         <section class="mb-4">
             <h2>家族のKotoLog</h2>
+            <a href="{% url 'journals:childcare_journal_list' %}?segment=family">すべて見る</a>
             <div id="familyCarousel" class="carousel slide" data-bs-ride="carousel">
                 <div class="carousel-inner">
                     <div class="carousel-item active">
@@ -73,6 +75,7 @@
                 {% if journals %}
                 <section class="mb-4">
                     <h2>{{ journals.0.child.child_name }}のKotoLog</h2>
+                    <a href="{% url 'journals:childcare_journal_list' %}?segment=child&child_id={{ child.id }}">すべて見る</a>
                     <div id="kidCarousel{{ child_id }}" class="carousel slide" data-bs-ride="carousel">
                         <div class="carousel-inner">
                             <div class="carousel-item active">
@@ -98,6 +101,7 @@
         {% endif %}
     <section class="mb-4">
         <h2>お気に入りのKotoLog</h2>
+        <a href="{% url 'journals:childcare_journal_list' %}?favorites=true">お気に入り</a>
         <div id="favoriteCarousel" class="carousel slide" data-bs-ride="carousel">
             <div class="carousel-inner">
                 <div class="carousel-item active">

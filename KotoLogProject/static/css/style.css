@@ -4,6 +4,9 @@ body{
 header{
     background:#97cee5;
 }
+header img{
+    width: 64px;
+}
 
 #userpage #account_journals #calendar{
     .fc-daygrid-day-number a {

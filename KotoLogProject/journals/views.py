@@ -7,7 +7,7 @@ from .models import (
     ChildcareJournalHashtag, Favorite,
     ChildcareJournalAccessLog)
 from accounts.models import User,Child
-from django.db.models import Prefetch, Count, Case, When, Value, BooleanField
+from django.db.models import Prefetch, Count, Case, When, Value, BooleanField,Q
 from django.utils import timezone
 from django.contrib import messages
 import re
@@ -182,41 +182,44 @@ class HomeView(View):
 
 class ChildcareJournalListView(View):
     def get(self, request):
-        # GETリクエストで育児記録一覧を表示
-        filter_type = request.GET.get('filter', 'recent')  # デフォルトは最近の記録
-        search_query = request.GET.get('search', '')
+        user = request.user
+        query_params = request.GET
 
-        # フィルタリング
-        if filter_type == 'family':
-            records = ChildcareJournal.objects.filter(user__families=request.user.family).order_by('-updated_at')
-        elif search_query:
-            records = ChildcareJournal.objects.filter(content__icontains=search_query).order_by('-updated_at')
-        else:
-            records = ChildcareJournal.objects.order_by('-updated_at')
+        # すべての育児記録を取得
+        queryset = ChildcareJournal.objects.all()
+
+        # お気に入りを取得
+        if query_params.get('favorites') == 'true':
+            queryset = queryset.filter(favorite__user=user)
+
+        # 検索パラメータの取得
+        search_query = query_params.get('search_query')
+        if search_query:
+            queryset = queryset.filter(
+                Q(title__icontains=search_query) | 
+                Q(content__icontains=search_query) | 
+                Q(childcarejournalhashtag__hashtag__hashtag_word__icontains=search_query)  # タグを含むフィルタリング
+            ).distinct()
+
+        # 日付ごとの育児記録を取得
+        filter_date = query_params.get('date')
+        if filter_date:
+            queryset = queryset.filter(published_on=filter_date)
+
+        # ホーム画面の各セグメントに合った育児記録を取得
+        segment = query_params.get('segment')
+        if segment == 'public':
+            queryset = queryset.filter(is_public=True)
+        elif segment == 'family':
+            queryset = queryset.filter(user__family=user.family)
+        elif segment == 'child':
+            child_id = query_params.get('child_id')
+            queryset = queryset.filter(child_id=child_id)
+
+        # Sort or further filter if needed (e.g., by date)
+        queryset = queryset.order_by('-published_on')
 
         context = {
-            'records': records,
-            'search_query': search_query,
-            'filter_type': filter_type,
-        }
-        return render(request, 'journals/childcare_journal_list.html', context)
-
-    def post(self, request):
-        # POSTリクエストでフィルタリングまたは検索を処理
-        search_query = request.POST.get('search', '')
-        filter_type = request.POST.get('filter', 'recent')
-
-        # フィルタリング処理
-        if filter_type == 'family':
-            records = ChildcareJournal.objects.filter(user__families=request.user.family).order_by('-updated_at')
-        elif search_query:
-            records = ChildcareJournal.objects.filter(content__icontains=search_query).order_by('-updated_at')
-        else:
-            records = ChildcareJournal.objects.order_by('-updated_at')
-
-        context = {
-            'records': records,
-            'search_query': search_query,
-            'filter_type': filter_type,
+            'childcare_journals': queryset,
         }
         return render(request, 'journals/childcare_journal_list.html', context)
