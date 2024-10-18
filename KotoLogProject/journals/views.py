@@ -21,7 +21,7 @@ def get_top_n(queryset, n=10):
 # お気に入りフラグを取得
 def get_favorite_flagged_queryset(queryset, user):
     return queryset.annotate(
-        is_favorite=Case(
+        is_favorited=Case(
             When(favorite__user=user, then=Value(True)),
             default=Value(False),
             output_field=BooleanField()
@@ -30,8 +30,14 @@ def get_favorite_flagged_queryset(queryset, user):
     
 class CreateChildcareJournalView(View):
     def get(self, request):
-        # GETリクエストでフォームを表示
-        form = ChildcareJournalForm()
+        # ユーザーに紐づく子供がいない場合はマイページへリダイレクト
+        children = Child.objects.filter(family=request.user.family)
+        if not children.exists():
+            messages.error(request, '育児記録の作成前に子ども情報を登録してください。')
+            return redirect('accounts:user_page')
+        
+        # フォームにユーザーを渡して表示
+        form = ChildcareJournalForm(user=request.user)
         return render(request, 'journals/create_childcare_journal.html', {'form': form})
 
     def post(self, request):

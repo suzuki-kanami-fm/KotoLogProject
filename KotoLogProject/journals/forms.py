@@ -1,5 +1,6 @@
 from django import forms
 from .models import ChildcareJournal
+from accounts.models import Child
 from django.utils import timezone
 
 class ChildcareJournalForm(forms.ModelForm):
@@ -28,7 +29,13 @@ class ChildcareJournalForm(forms.ModelForm):
             'is_public': forms.CheckboxInput(),
         }
         
-        def __init__(self, *args, **kwargs):
-            super(ChildcareJournalForm, self).__init__(*args, **kwargs)
-            self.fields['is_public'].initial = False  # 公開しない
-            self.fields['published_on'].initial = timezone.now().date() 
+    def __init__(self, *args,  **kwargs):
+        user = kwargs.pop('user', None)
+        super(ChildcareJournalForm, self).__init__(*args, **kwargs)
+        
+        # 子供がユーザーのfamilyに紐づいている場合のみ、childフィールドに表示
+        if user:
+            self.fields['child'].queryset = Child.objects.filter(family=user.family)
+
+        self.fields['is_public'].initial = False  # 公開しない
+        self.fields['published_on'].initial = timezone.now().date()

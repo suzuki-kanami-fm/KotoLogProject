@@ -1,13 +1,15 @@
 <div class="col-md-4">
     <div class="card">
-        {% if journal.child.user in request.user.family.all %}
+        
             <h5 class="card-title">
-                <span>{{ journal.child.name }}</span>
-                {% if journal.is_favorited %}
-                    <span>★</span>
-                {% endif %}
+            {% if journal.child.family == request.user.family %}
+                <span>{{ journal.child.child_name }}</span>
+            {% endif %}
+            {% if journal.is_favorited %}
+                <span>★</span>
+            {% endif %}
             </h5>
-        {% endif %}
+
         {% if journal.image_url %}
             <img src="{{ journal.image_url.url }}" class="card-img-top" alt="Journal Image" style="max-height: 200px; object-fit: cover;">
         {% endif %}
