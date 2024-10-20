@@ -11,6 +11,7 @@ from django.db.models import Prefetch, Count, Case, When, Value, BooleanField,Q
 from django.utils import timezone
 from django.contrib import messages
 import re
+from KotoLogProject.forms import SearchJournalForm
 
 ## 共通関数 ##
 
@@ -148,7 +149,11 @@ class HomeView(View):
 
             # 閲覧回数の多い育児記録
             popular_journals = get_favorite_flagged_queryset(
-                get_top_n(ChildcareJournal.objects.annotate(count=Count('impression_count')).select_related('user')),
+                get_top_n(
+                    ChildcareJournal.objects.filter(
+                        Q(is_public=True) | Q(user__in=family_users)
+                    ).annotate(count=Count('impression_count')).select_related('user')
+                ),
                 request.user
             )
 
@@ -190,16 +195,29 @@ class ChildcareJournalListView(View):
     def get(self, request):
         user = request.user
         query_params = request.GET
+        
+         # 検索フォームをユーザー情報付きで生成
+        search_form = SearchJournalForm(user=user, data=request.GET)
 
         # すべての育児記録を取得
         queryset = ChildcareJournal.objects.all()
 
-        # お気に入りを取得
-        if query_params.get('favorites') == 'true':
-            queryset = queryset.filter(favorite__user=user)
+        # フィルター未選択の場合のデフォルト検索条件: 
+        # ログインユーザー：公開されている育児記録 または 家族の育児記録
+        # 未ログインユーザー：公開されている育児記録
+        if request.user.is_authenticated:
+            default_filter = Q(is_public=True) | Q(user__family=user.family)
+        else:
+            default_filter = Q(is_public=True)
+            
+        queryset = queryset.filter(default_filter)
 
-        # 検索パラメータの取得
+        # 検索フォームの値セット
         search_query = query_params.get('search_query')
+        filter_option = query_params.get('filter_option')
+        child_id = query_params.get('child')
+
+        # キーワード検索
         if search_query:
             queryset = queryset.filter(
                 Q(title__icontains=search_query) | 
@@ -207,12 +225,27 @@ class ChildcareJournalListView(View):
                 Q(childcarejournalhashtag__hashtag__hashtag_word__icontains=search_query)  # タグを含むフィルタリング
             ).distinct()
 
-        # 日付ごとの育児記録を取得
+        # フィルタリング処理
+        if filter_option == 'public':
+            queryset = queryset.filter(is_public=True)
+        elif filter_option == 'family' and user.is_authenticated:
+            queryset = queryset.filter(user__family=user.family)
+        elif filter_option.isdigit():
+            # 子どもIDに基づいてフィルタリング
+            queryset = queryset.filter(child_id=int(filter_option))
+        elif filter_option == 'favorites' and user.is_authenticated:
+            queryset = queryset.filter(favorite__user=user)
+
+        # お気に入りのフィルタが指定されている場合
+        if query_params.get('favorites') == 'true':
+            queryset = queryset.filter(favorite__user=user)
+
+        # 日付フィルターが指定されている場合
         filter_date = query_params.get('date')
         if filter_date:
             queryset = queryset.filter(published_on=filter_date)
 
-        # ホーム画面の各セグメントに合った育児記録を取得
+        # セグメントフィルターが指定されている場合
         segment = query_params.get('segment')
         if segment == 'public':
             queryset = queryset.filter(is_public=True)
@@ -222,10 +255,11 @@ class ChildcareJournalListView(View):
             child_id = query_params.get('child_id')
             queryset = queryset.filter(child_id=child_id)
 
-        # Sort or further filter if needed (e.g., by date)
+        # 公開日付順に並べる
         queryset = queryset.order_by('-published_on')
 
         context = {
             'childcare_journals': queryset,
+            'search_form': search_form,
         }
         return render(request, 'journals/childcare_journal_list.html', context)

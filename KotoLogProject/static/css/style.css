@@ -2,11 +2,21 @@ body{
     background: #454545;
 }
 header{
-    background:#97cee5;
+    background:#d1e0f3;
+    padding:5px 10px;
 }
 header img{
-    width: 64px;
+    width: 48px;
 }
+/* base.html */
+/* ハンバーガーメニューのボタンのスタイル */
+.navbar-toggler-icon {
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .navbar-toggler[aria-expanded="true"] .navbar-toggler-icon {
+    transform: rotate(45deg);
+  }
 
 #userpage #account_journals #calendar{
     .fc-daygrid-day-number a {

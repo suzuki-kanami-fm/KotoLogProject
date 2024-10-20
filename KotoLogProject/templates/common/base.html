@@ -19,9 +19,9 @@
    <body>
    <header>
         <a class="" href="{% url 'home' %}"><img src="{% static "img/kotolog.png" %}" alt="KotoLog"></a>
-        <form action="{% url 'journals:childcare_journal_list' %}" method="GET">
-            <input type="text" name="search_query" placeholder="Search..." />
-            <button type="submit">Search</button>
+        <form method="GET" action="{% url 'journals:childcare_journal_list' %}">
+            {{ search_form.as_p }}
+            <button type="submit" class="btn btn-primary">検索</button>
         </form>
         {% if user.is_authenticated %}
             <a class="" href="{% url 'journals:create_childcare_journal' %}">編集画面</a>

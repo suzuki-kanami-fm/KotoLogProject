@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from . import settings
-from .views import PortfolioView
+from .views import PortfolioView,SearchFormView
 from journals.views import HomeView
 from django.conf.urls.static import static
 

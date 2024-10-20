@@ -75,7 +75,7 @@
                 {% if journals %}
                 <section class="mb-4">
                     <h2>{{ journals.0.child.child_name }}のKotoLog</h2>
-                    <a href="{% url 'journals:childcare_journal_list' %}?segment=child&child_id={{ child.id }}">すべて見る</a>
+                    <a href="{% url 'journals:childcare_journal_list' %}?segment=child&child_id={{ child_id }}">すべて見る</a>
                     <div id="kidCarousel{{ child_id }}" class="carousel slide" data-bs-ride="carousel">
                         <div class="carousel-inner">
                             <div class="carousel-item active">
