@@ -9,14 +9,9 @@ class SearchJournalForm(forms.Form):
     )
     
     filter_option = forms.ChoiceField(
-        choices=[
-            ('', 'フィルタを選択'),
-            ('public', 'すべて'),
-            ('family', '家族'),
-            ('favorites', 'お気に入り'),
-        ], 
         required=False, 
-        label=""
+        label="",
+        choices=[]  # choicesは__init__で動的に設定
     )
 
     def __init__(self, *args, **kwargs):
@@ -24,18 +19,23 @@ class SearchJournalForm(forms.Form):
         data = kwargs.get('data', None)  # データを取得
         super(SearchJournalForm, self).__init__(*args, **kwargs)
 
+        # デフォルトのフィルタ選択肢
         filter_choices = [
-            ('', 'フィルタを選択'),
-            ('public', 'すべて'),
-            ('family', '家族'),
-            ('favorites', 'お気に入り'),
+            ('public', '公開'),
         ]
 
+        # ログイン済みユーザーには追加の選択肢を表示
         if user and user.is_authenticated:
+            filter_choices += [
+                ('',''),
+                ('family', '家族'),
+                ('favorites', 'お気に入り')
+            ]
+            # 子どもごとのフィルタも追加
             children = Child.objects.filter(family=user.family)
             for child in children:
                 filter_choices.append((str(child.id), f"{child.child_name}の記録"))
-        
+
         self.fields['filter_option'].choices = filter_choices
 
         # デフォルトの値をフォームに再設定

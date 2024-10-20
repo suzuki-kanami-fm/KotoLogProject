@@ -196,7 +196,7 @@ class ChildcareJournalListView(View):
         user = request.user
         query_params = request.GET
         
-         # 検索フォームをユーザー情報付きで生成
+        # 検索フォームをユーザー情報付きで生成
         search_form = SearchJournalForm(user=user, data=request.GET)
 
         # すべての育児記録を取得
@@ -225,16 +225,16 @@ class ChildcareJournalListView(View):
                 Q(childcarejournalhashtag__hashtag__hashtag_word__icontains=search_query)  # タグを含むフィルタリング
             ).distinct()
 
-            # フィルタリング処理
-            if filter_option == 'public':
-                queryset = queryset.filter(is_public=True)
-            elif filter_option == 'family' and user.is_authenticated:
-                queryset = queryset.filter(user__family=user.family)
-            elif filter_option.isdigit():
-                # 子どもIDに基づいてフィルタリング
-                queryset = queryset.filter(child_id=int(filter_option))
-            elif filter_option == 'favorites' and user.is_authenticated:
-                queryset = queryset.filter(favorite__user=user)
+        # フィルタリング処理
+        if filter_option == 'public':
+            queryset = queryset.filter(is_public=True)
+        elif filter_option == 'family' and user.is_authenticated:
+            queryset = queryset.filter(user__family=user.family)
+        elif filter_option and filter_option.isdigit():
+            # 子どもIDに基づいてフィルタリング
+            queryset = queryset.filter(child_id=int(filter_option))
+        elif filter_option == 'favorites' and user.is_authenticated:
+            queryset = queryset.filter(favorite__user=user)
 
         # お気に入りのフィルタが指定されている場合
         if query_params.get('favorites') == 'true':
@@ -245,16 +245,6 @@ class ChildcareJournalListView(View):
         if filter_date:
             queryset = queryset.filter(published_on=filter_date)
 
-        # セグメントフィルターが指定されている場合
-        segment = query_params.get('segment')
-        if segment == 'public':
-            queryset = queryset.filter(is_public=True)
-        elif segment == 'family':
-            queryset = queryset.filter(user__family=user.family)
-        elif segment == 'child':
-            child_id = query_params.get('child_id')
-            queryset = queryset.filter(child_id=child_id)
-
         # 公開日付順に並べる
         queryset = queryset.order_by('-published_on')
 
@@ -263,7 +253,7 @@ class ChildcareJournalListView(View):
             'search_form': search_form,
         }
         return render(request, 'journals/childcare_journal_list.html', context)
-    
+
 
 class DeleteChildcareJournalsView(View):
     def post(self, request):

@@ -15,7 +15,7 @@
         {% endif %}
         <h6 class="card-subtitle mb-2 text-muted">{{ journal.title }}</h6>
         <p class="card-text">{{ journal.content|truncatewords:20 }}</p>
-        <p class="card-text"><small class="text-muted">作成者: {{ journal.user.username }}</small></p>
+        <p class="card-text"><small class="text-muted">作成者: {{ journal.user.account_name }}</small></p>
         <button class="btn btn-primary" data-id="{{ journal.id }}" data-bs-toggle="modal" data-bs-target="#journalModal">詳細を見る</button>
     </div>
 </div>
