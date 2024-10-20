@@ -17,21 +17,38 @@
         <title>KotoLog</title>
     </head>
    <body>
-   <header>
+    <header class="navbar navbar-expand-md sticky-top py-3 text-center">
         <a class="" href="{% url 'home' %}"><img src="{% static "img/kotolog.png" %}" alt="KotoLog"></a>
         <form method="GET" action="{% url 'journals:childcare_journal_list' %}">
-            {{ search_form.as_p }}
+            <span>
+                {{ search_form.search_query }}
+                {{ search_form.filter_option }}
+            </span>
             <button type="submit" class="btn btn-primary">検索</button>
         </form>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
         {% if user.is_authenticated %}
-            <a class="" href="{% url 'journals:create_childcare_journal' %}">編集画面</a>
-            <a href="{% url 'journals:childcare_journal_list' %}?favorites=true">お気に入り</a>
-            <a class="" href="{% url 'accounts:user_page' %}">アカウント情報</a>
-            <form method="post" action="{% url 'accounts:logout' %}">
-            {% csrf_token %}
-                <button type="submit">ログアウト</button>
-            </form>
-
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'journals:create_childcare_journal' %}" title="育児記録作成"><img src="{% static "img/edit.png" %}" alt="育児記録作成"></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'journals:childcare_journal_list' %}?favorites=true">お気に入り</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'accounts:user_page' %}">アカウント情報</a>
+                </li>
+                <li class="nav-item">
+                    <form method="post" action="{% url 'accounts:logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="nav-link">ログアウト</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
         {% else %}
             <a class="" href="{% url 'accounts:login' %}">ログイン</a>
         {% endif %}

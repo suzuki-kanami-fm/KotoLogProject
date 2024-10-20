@@ -8,6 +8,17 @@ header{
 header img{
     width: 48px;
 }
+header form span{
+    background: #FFF;
+    padding: 10px 5px;
+    border-radius: 20px;
+    margin: 0 5px;
+    font-size: 14px;
+}
+header form span input,header form span select{
+    background: transparent;
+    border: none; 
+}
 /* base.html */
 /* ハンバーガーメニューのボタンのスタイル */
 .navbar-toggler-icon {

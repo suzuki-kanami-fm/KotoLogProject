@@ -225,16 +225,16 @@ class ChildcareJournalListView(View):
                 Q(childcarejournalhashtag__hashtag__hashtag_word__icontains=search_query)  # タグを含むフィルタリング
             ).distinct()
 
-        # フィルタリング処理
-        if filter_option == 'public':
-            queryset = queryset.filter(is_public=True)
-        elif filter_option == 'family' and user.is_authenticated:
-            queryset = queryset.filter(user__family=user.family)
-        elif filter_option.isdigit():
-            # 子どもIDに基づいてフィルタリング
-            queryset = queryset.filter(child_id=int(filter_option))
-        elif filter_option == 'favorites' and user.is_authenticated:
-            queryset = queryset.filter(favorite__user=user)
+            # フィルタリング処理
+            if filter_option == 'public':
+                queryset = queryset.filter(is_public=True)
+            elif filter_option == 'family' and user.is_authenticated:
+                queryset = queryset.filter(user__family=user.family)
+            elif filter_option.isdigit():
+                # 子どもIDに基づいてフィルタリング
+                queryset = queryset.filter(child_id=int(filter_option))
+            elif filter_option == 'favorites' and user.is_authenticated:
+                queryset = queryset.filter(favorite__user=user)
 
         # お気に入りのフィルタが指定されている場合
         if query_params.get('favorites') == 'true':
@@ -263,3 +263,22 @@ class ChildcareJournalListView(View):
             'search_form': search_form,
         }
         return render(request, 'journals/childcare_journal_list.html', context)
+    
+
+class DeleteChildcareJournalsView(View):
+    def post(self, request):
+        # POSTリクエストから選択された育児記録のIDを取得
+        selected_journal_ids = request.POST.getlist('selected_journals')
+        print(selected_journal_ids)
+        # ユーザーが作成した育児記録のみ削除可能
+        journals_to_delete = ChildcareJournal.objects.filter(id__in=selected_journal_ids, user=request.user)
+
+        # 育児記録を削除
+        if journals_to_delete.exists():
+            journals_to_delete.delete()
+            messages.success(request, '選択された育児記録が削除されました。')
+        else:
+            messages.error(request, '削除する記録が選択されていないか、削除権限がありません。')
+
+        # 一覧画面にリダイレクト
+        return redirect('journals:childcare_journal_list')

@@ -4,7 +4,7 @@ from accounts.models import Child
 class SearchJournalForm(forms.Form):
     search_query = forms.CharField(
         required=False, 
-        label="キーワード", 
+        label="", 
         widget=forms.TextInput(attrs={'placeholder': 'キーワード'})
     )
     
@@ -16,7 +16,7 @@ class SearchJournalForm(forms.Form):
             ('favorites', 'お気に入り'),
         ], 
         required=False, 
-        label="フィルタ"
+        label=""
     )
 
     def __init__(self, *args, **kwargs):

@@ -1,7 +1,8 @@
 from django.urls import path
 from .views import (
     ChildcareJournalListView,CreateChildcareJournalView, 
-    ChildcareJournalDetailView,EditChildcareJournalView)
+    ChildcareJournalDetailView,EditChildcareJournalView,
+    DeleteChildcareJournalsView)
 
 app_name='journals'
 urlpatterns = [
@@ -9,4 +10,5 @@ urlpatterns = [
     path('create_childcare_journal/', CreateChildcareJournalView.as_view(), name='create_childcare_journal'),
     path('journal_detail/<int:journal_id>/', ChildcareJournalDetailView.as_view(), name='journal_detail'),
     path('edit_childcare_journal/<int:journal_id>/', EditChildcareJournalView.as_view(), name='edit_childcare_journal'), 
+    path('delete_childcare_journals/', DeleteChildcareJournalsView.as_view(), name='delete_childcare_journals'),
 ]
