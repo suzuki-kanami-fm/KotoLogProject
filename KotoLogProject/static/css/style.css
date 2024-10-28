@@ -1,11 +1,10 @@
-body{
-    color: #454545;
-}
 header{
     background:#d1e0f3;
-    padding:5px 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
+}
+header a{
+    padding:0px 10px;
 }
 header img{
     width: 48px;
@@ -28,14 +27,6 @@ header form span button img{
     width: 30px;
 }
 /* base.html */
-/* ハンバーガーメニューのボタンのスタイル */
-.navbar-toggler-icon {
-    transition: transform 0.3s ease-in-out;
-  }
-  
-  .navbar-toggler[aria-expanded="true"] .navbar-toggler-icon {
-    transform: rotate(45deg);
-  }
 
 #userpage #account_journals #calendar{
     .fc-daygrid-day-number a {
@@ -147,6 +138,10 @@ header form span button img{
 .card-footer{
     background-color: transparent;
     border: none;
+}
+.card  .card-body .card-subtitle .child-name{
+    padding: 3px 10px;
+    border-radius: 7.5px;
 }
 /*ユーザーページ*/
 #userpage {

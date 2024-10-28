@@ -7,11 +7,13 @@ from .models import (
     ChildcareJournalHashtag, Favorite,
     ChildcareJournalAccessLog)
 from accounts.models import User,Child
+from KotoLogProject.forms import SearchJournalForm
 from django.db.models import Prefetch, Count, Case, When, Value, BooleanField,Q
 from django.utils import timezone
 from django.contrib import messages
 import re
-from KotoLogProject.forms import SearchJournalForm
+import hashlib
+
 
 ## 共通関数 ##
 
@@ -132,15 +134,20 @@ class ChildcareJournalDetailView(View):
     
 class HomeView(View):
     def get(self, request):
-        
-        # 公開されている育児記録
-        public_journals = get_top_n(ChildcareJournal.objects.filter(is_public=True).select_related('user'))
 
         if request.user.is_authenticated:
             family_users = User.objects.filter(family=request.user.family)
             children = Child.objects.filter(family=request.user.family)
 
             # 各セグメントのデータ取得
+            # 公開されている育児記録
+            public_journals = get_favorite_flagged_queryset(
+                get_top_n(ChildcareJournal.objects.filter(
+                        Q(is_public=True) | Q(user__in=family_users)
+                    ).select_related('user')),
+                request.user
+            )
+            
             # 家族の育児記録
             family_journals = get_favorite_flagged_queryset(
                 get_top_n(ChildcareJournal.objects.filter(user__in=family_users).select_related('user')),
@@ -180,6 +187,10 @@ class HomeView(View):
                 'favorite_journals': favorite_journals,
             }
         else:
+        
+            # 公開されている育児記録
+            public_journals = get_top_n(ChildcareJournal.objects.filter(is_public=True).select_related('user'))
+                
             #　閲覧回数の多い育児記録(公開されているもののみ)
             popular_journals = get_top_n(ChildcareJournal.objects.filter(is_public=True).annotate(count=Count('impression_count')).order_by('-count').select_related('user'))
 
@@ -245,9 +256,15 @@ class ChildcareJournalListView(View):
         if filter_date:
             queryset = queryset.filter(published_on=filter_date)
 
-        # 公開日付順に並べる
-        queryset = get_favorite_flagged_queryset(queryset.order_by('-published_on'),user)
 
+        if request.user.is_authenticated:
+           
+            # 公開日付順に並べる
+            queryset = get_favorite_flagged_queryset(queryset.order_by('-published_on'),user)
+         
+        else:
+            queryset = queryset.order_by('-published_on')
+       
         context = {
             'childcare_journals': queryset,
             'search_form': search_form,

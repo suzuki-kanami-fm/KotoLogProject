@@ -20,6 +20,8 @@
                 <div class="carousel-track">
                     {% for journal in public_journals %}
                         {% include 'journals/childcare_journal_card.html' %}
+                    {% empty %}
+                    <p>最近の育児記録はありません。</p>
                     {% endfor %}
                 </div>
             </div>

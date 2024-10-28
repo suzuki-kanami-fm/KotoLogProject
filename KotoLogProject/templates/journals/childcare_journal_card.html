@@ -1,10 +1,11 @@
+{% load custom_filters %}
 <div class="carousel-item active">
     <div class="card h-100">
         <div class="card-body">
-            <h6 class="card-subtitle d-flex justify-content-between">
+            <h6 class="card-subtitle d-flex justify-content-between mb-3">
                 <span>
                 {% if journal.child.family == request.user.family %}
-                    <span>{{ journal.child.child_name }}</span>
+                    <span style="background-color: {{ journal.child.id|generate_hsl_color }}"  class="child-name">{{ journal.child.child_name }}</span>
                 {% endif %}
                 {% if journal.is_favorited %}
                 <span>★</span>
