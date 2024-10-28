@@ -1,14 +1,45 @@
 {% extends 'common/base.html' %}
 {% block content %}
-<section id="edit_childcare_journal">
-    <h1>育児記録の編集</h1>
-    
-    <form method="POST" action="" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">更新</button>
-    </form>
-    
-    <a href="{% url 'home' %}">戻る</a>
+<section id="create_childcare_journal" class="container mt-5 d-flex justify-content-center">
+    <div class="col-md-8 col-lg-6">
+
+        <form method="POST" action="" enctype="multipart/form-data" class="p-4 border rounded">
+            {% csrf_token %}
+
+            <div class="form-group mb-3">
+                {{ form.child.label_tag }}  <!-- 子供選択ラベル -->
+                {{ form.child }}
+            </div>
+
+            <div class="form-group mb-3">
+                {{ form.title.label_tag }}  <!-- タイトルラベル -->
+                {{ form.title }}
+            </div>
+
+            <div class="form-group mb-3">
+                {{ form.published_on.label_tag }}  <!-- 日付ラベル -->
+                {{ form.published_on }}
+            </div>
+
+            <div class="form-group mb-3">
+                {{ form.content.label_tag }}  <!-- 内容ラベル -->
+                {{ form.content }}
+            </div>
+
+            <div class="form-group mb-3">
+                {{ form.is_public.label_tag }}  <!-- 公開設定ラベル -->
+                {{ form.is_public }}
+            </div>
+
+            <div class="form-group mb-3">
+                {{ form.image_url.label_tag }}  <!-- 画像/動画アップロードラベル -->
+                {{ form.image_url }}
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">更新</button>
+            <a href="{% url 'home' %}"  class="btn btn-link">戻る</a>
+        </form>
+    </div>    
+
 </section>
 {% endblock %}

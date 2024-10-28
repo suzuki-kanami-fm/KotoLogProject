@@ -246,7 +246,7 @@ class ChildcareJournalListView(View):
             queryset = queryset.filter(published_on=filter_date)
 
         # 公開日付順に並べる
-        queryset = queryset.order_by('-published_on')
+        queryset = get_favorite_flagged_queryset(queryset.order_by('-published_on'),user)
 
         context = {
             'childcare_journals': queryset,
