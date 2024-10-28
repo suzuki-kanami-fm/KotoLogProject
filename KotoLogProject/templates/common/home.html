@@ -1,7 +1,6 @@
 {% extends 'common/base.html' %}
 {% block content %}
-<section class"home">
-    <h1>Home</h1>
+<section id="home"  class="container-fluid">
     {% if messages %}
       <div class="alert alert-success">
           {% for message in messages %}
@@ -9,122 +8,98 @@
           {% endfor %}
       </div>      
     {% endif %}
+    
     <section class="mb-4">
-        <h2>最近のKotoLog</h2>
+        <h2 class="journal_title">最近のKotoLog</h2>
         <a href="{% url 'journals:childcare_journal_list' %}?segment=public">すべて見る</a>
-        <div id="recentCarousel" class="carousel slide" data-bs-ride="carousel">
-            <div class="carousel-inner">
-                <div class="carousel-item active">
-                    <div class="row">
-                        {% for journal in public_journals %}
-                            {% include 'journals/childcare_journal_card.html' %}
-                        {% endfor %}
-                    </div>
+        
+        <!-- 最近のKotoLog カルーセル -->
+        <div id="recentCarousel" class="carousel-container">
+            <button class="carousel-prev" data-target="#recentCarousel">＜</button>
+            <div class="carousel-track-container">
+                <div class="carousel-track">
+                    {% for journal in public_journals %}
+                        {% include 'journals/childcare_journal_card.html' %}
+                    {% endfor %}
                 </div>
             </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#recentCarousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon"></span>
-                <span class="visually-hidden">前へ</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#recentCarousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon"></span>
-                <span class="visually-hidden">次へ</span>
-            </button>
+            <button class="carousel-next" data-target="#recentCarousel">＞</button>
         </div>
     </section>
+
     <section class="mb-4">
-        <h2>よく見られているKotoLog</h2>
-        <div id="popularCarousel" class="carousel slide" data-bs-ride="carousel">
-            <div class="carousel-inner">
-                <div class="carousel-item active">
-                    <div class="row">
-                        {% for journal in popular_journals %}
-                            {% include 'journals/childcare_journal_card.html' %}
-                        {% endfor %}
-                    </div>
+        <h2 class="journal_title">よく見られているKotoLog</h2>
+        <div id="popularCarousel" class="carousel-container">
+            <button class="carousel-prev" data-target="#popularCarousel">＜</button>
+            <div class="carousel-track-container">
+                <div class="carousel-track">
+                    {% for journal in popular_journals %}
+                        {% include 'journals/childcare_journal_card.html' %}
+                    {% endfor %}
                 </div>
             </div>
+            <button class="carousel-next" data-target="#popularCarousel">＞</button>
         </div>
     </section>    
+
     {% if user.is_authenticated %}
         {% if request.user.family %}
         <section class="mb-4">
-            <h2>家族のKotoLog</h2>
+            <h2 class="journal_title">家族のKotoLog</h2>
             <a href="{% url 'journals:childcare_journal_list' %}?segment=family">すべて見る</a>
-            <div id="familyCarousel" class="carousel slide" data-bs-ride="carousel">
-                <div class="carousel-inner">
-                    <div class="carousel-item active">
-                        <div class="row">
-                            {% for journal in family_journals %}
+            <div id="familyCarousel" class="carousel-container">
+                <button class="carousel-prev" data-target="#familyCarousel">＜</button>
+                <div class="carousel-track-container">
+                    <div class="carousel-track">
+                        {% for journal in family_journals %}
+                            {% include 'journals/childcare_journal_card.html' %}
+                        {% endfor %}
+                    </div>
+                </div>
+                <button class="carousel-next" data-target="#familyCarousel">＞</button>
+            </div>
+        </section>     
+
+        {% for child_id, journals in child_journals.items %}
+            {% if journals %}
+            <section class="mb-4">
+                <h2 class="journal_title">{{ journals.0.child.child_name }}のKotoLog</h2>
+                <a href="{% url 'journals:childcare_journal_list' %}?segment=child&child_id={{ child_id }}">すべて見る</a>
+                <div id="kidCarousel{{ child_id }}" class="carousel-container">
+                    <button class="carousel-prev" data-target="#kidCarousel{{ child_id }}">＜</button>
+                    <div class="carousel-track-container">
+                        <div class="carousel-track">
+                            {% for journal in journals %}
                                 {% include 'journals/childcare_journal_card.html' %}
                             {% endfor %}
                         </div>
                     </div>
+                    <button class="carousel-next" data-target="#kidCarousel{{ child_id }}">＞</button>
                 </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#familyCarousel" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon"></span>
-                    <span class="visually-hidden">前へ</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#familyCarousel" data-bs-slide="next">
-                    <span class="carousel-control-next-icon"></span>
-                    <span class="visually-hidden">次へ</span>
-                </button>
-            </div>
-        </section>
-            {% for child_id, journals in child_journals.items %}
-                {% if journals %}
-                <section class="mb-4">
-                    <h2>{{ journals.0.child.child_name }}のKotoLog</h2>
-                    <a href="{% url 'journals:childcare_journal_list' %}?segment=child&child_id={{ child_id }}">すべて見る</a>
-                    <div id="kidCarousel{{ child_id }}" class="carousel slide" data-bs-ride="carousel">
-                        <div class="carousel-inner">
-                            <div class="carousel-item active">
-                                <div class="row">
-                                    {% for journal in journals %}
-                                        {% include 'journals/childcare_journal_card.html' %}
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        </div>
-                        <button class="carousel-control-prev" type="button" data-bs-target="#kidCarousel{{ child_id }}" data-bs-slide="prev">
-                            <span class="carousel-control-prev-icon"></span>
-                            <span class="visually-hidden">前へ</span>
-                        </button>
-                        <button class="carousel-control-next" type="button" data-bs-target="#kidCarousel{{ child_id }}" data-bs-slide="next">
-                            <span class="carousel-control-next-icon"></span>
-                            <span class="visually-hidden">次へ</span>
-                        </button>
-                    </div>
-                </section>  
-                {% endif %}
-            {% endfor %}   
+            </section>  
+            {% endif %}
+        {% endfor %}   
         {% endif %}
     <section class="mb-4">
-        <h2>お気に入りのKotoLog</h2>
-        <a href="{% url 'journals:childcare_journal_list' %}?favorites=true">お気に入り</a>
-        <div id="favoriteCarousel" class="carousel slide" data-bs-ride="carousel">
-            <div class="carousel-inner">
-                <div class="carousel-item active">
-                    <div class="row">
-                        {% for journal in favorite_journals %}
-                            {% include 'journals/childcare_journal_card.html' %}
-                        {% endfor %}
-                    </div>
+        <h2 class="journal_title">お気に入りのKotoLog</h2>
+        <a href="{% url 'journals:childcare_journal_list' %}?favorites=true">すべて見る</a>
+        <div id="favoriteCarousel" class="carousel-container">
+            <button class="carousel-prev" data-target="#favoriteCarousel">＜</button>
+            <div class="carousel-track-container">
+                <div class="carousel-track">
+                    {% for journal in favorite_journals %}
+                        {% include 'journals/childcare_journal_card.html' %}
+                    {% endfor %}
                 </div>
             </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#favoriteCarousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon"></span>
-                <span class="visually-hidden">前へ</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#favoriteCarousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon"></span>
-                <span class="visually-hidden">次へ</span>
-            </button>
+            <button class="carousel-next" data-target="#favoriteCarousel">＞</button>
         </div>
     </section>    
-    {% endif%}
-
+    {% endif %}
 </section>
-  <!-- モーダルテンプレートの読み込み -->
-    {% include 'journals/journal_detail.html' %}
+
+<!-- モーダルテンプレートの読み込み -->
+{% include 'journals/journal_detail.html' %}
+{% load static %}
+<script src="{% static 'js/function.js' %}"></script>     
 {% endblock %}

@@ -6,7 +6,7 @@ from django.utils import timezone
 class ChildcareJournalForm(forms.ModelForm):
     class Meta:
         model = ChildcareJournal
-        fields = ['child', 'title', 'published_on','content', 'is_public',  'image_url']
+        fields = ['child', 'title', 'published_on', 'content', 'is_public', 'image_url']
         
         labels = {
             'child': '子供選択',
@@ -18,24 +18,29 @@ class ChildcareJournalForm(forms.ModelForm):
         }
 
         widgets = {
-            'child': forms.Select(attrs={'placeholder': '子供を選択してください'}),
-            'title': forms.TextInput(attrs={'placeholder': 'タイトル'}),
-            'published_on':forms.DateInput(attrs={
+            'child': forms.Select(attrs={'class': 'form-select', 'placeholder': '子供を選択してください'}),
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'タイトル'}),
+            'published_on': forms.DateInput(attrs={
+                'class': 'form-control',
                 'type': 'date',
-                'value': timezone.now().date(),  
+                'value': timezone.now().date(),
                 'placeholder': '公開日を選択してください'
             }),
-            'content': forms.Textarea(attrs={'placeholder': '反応、対応策を簡単に記録してください。例: ○○が原因で癇癪を起こしたので、お気に入りのおもちゃで気を紛らわせました。#対応策 #癇癪'}),
-            'is_public': forms.CheckboxInput(),
+            'content': forms.Textarea(attrs={
+                'class': 'form-control',
+                'placeholder': '反応、対応策を簡単に記録してください。例: ○○が原因で癇癪を起こしたので、お気に入りのおもちゃで気を紛らわせました。#対応策 #癇癪'
+            }),
+            'is_public': forms.CheckboxInput(attrs={'class': 'form-check-label'}),
+            'image_url': forms.FileInput(attrs={'class': 'form-control'}),
         }
         
-    def __init__(self, *args,  **kwargs):
+    def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super(ChildcareJournalForm, self).__init__(*args, **kwargs)
         
-        # 子供がユーザーのfamilyに紐づいている場合のみ、childフィールドに表示
+        # Filter child choices to those related to the user's family
         if user:
             self.fields['child'].queryset = Child.objects.filter(family=user.family)
 
-        self.fields['is_public'].initial = False  # 公開しない
+        self.fields['is_public'].initial = False  # Default to not public
         self.fields['published_on'].initial = timezone.now().date()

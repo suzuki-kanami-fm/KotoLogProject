@@ -1,12 +1,71 @@
 {% extends 'common/base.html' %}
+{% load static %}
 {% block content %}
-<section id="create_childcare_journal">
-    <h1>育児記録の作成</h1>
-    
-    <form method="POST" action="" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">保存</button>
-    </form>
+<section id="create_childcare_journal" class="container mt-5 d-flex justify-content-center">
+    <div class="col-md-8 col-lg-6">
+
+        <form method="POST" action="" enctype="multipart/form-data" class="p-4 border rounded">
+            {% csrf_token %}
+
+            <div class="form-group mb-3">
+                {{ form.child.label_tag }}  <!-- 子供選択ラベル -->
+                {{ form.child }}
+            </div>
+
+            <div class="form-group mb-3">
+                {{ form.title.label_tag }}  <!-- タイトルラベル -->
+                {{ form.title }}
+            </div>
+
+            <div class="form-group mb-3">
+                {{ form.published_on.label_tag }}  <!-- 日付ラベル -->
+                {{ form.published_on }}
+            </div>
+
+            <div class="form-group mb-3">
+                {{ form.content.label_tag }}  <!-- 内容ラベル -->
+                {{ form.content }}
+            </div>
+
+            <div class="form-group mb-3">
+                {{ form.is_public.label_tag }}  <!-- 公開設定ラベル -->
+                {{ form.is_public }}
+            </div>
+
+            <div class="form-group mb-3">
+                {{ form.image_url.label_tag }}  <!-- 画像/動画アップロードラベル -->
+                {{ form.image_url }}
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">保存</button>
+        </form>
+    </div>
 </section>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector("form");
+    form.addEventListener("submit", function (event) {
+        let errorMessage = "";
+        const child = document.querySelector("select[name='child']").value;
+        const title = document.querySelector("input[name='title']").value;
+        const content = document.querySelector("textarea[name='content']").value;
+
+        if (!child) {
+            errorMessage += "子どもを選択してください。\n";
+        }
+        if (!title) {
+            errorMessage += "タイトルを入力してください。\n";
+        }
+        if (!content) {
+            errorMessage += "内容を入力してください。\n";
+        }
+
+        if (errorMessage) {
+            alert(errorMessage);
+            event.preventDefault(); // フォームの送信を停止
+        }
+    });
+});
+</script>
+
 {% endblock %}

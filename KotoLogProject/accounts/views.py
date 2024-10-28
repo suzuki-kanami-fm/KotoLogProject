@@ -18,12 +18,12 @@ class SignupView(View):
 
     def get(self, request, uuid=None):
         family = None
-        
+
         # UUIDが渡されている場合、対応するFamilyを取得
         if uuid:
-            families = Family.objects.all()  # 全てのFamilyを取得
-
-            # 手動で invitations の中から該当するUUIDを探す
+            families = Family.objects.all()
+            
+            # invitationsの中から該当するUUIDを探す
             for fam in families:
                 for invitation in fam.invitations:
                     if invitation['uuid'] == str(uuid) and not invitation['used']:
@@ -33,36 +33,38 @@ class SignupView(View):
             # 該当するFamilyが見つからなかった場合
             if not family:
                 messages.error(request, 'この招待URLは無効です。新しい招待URLを発行してください。')
-                return redirect('home')  # 無効な場合はホーム画面にリダイレクト
+                return redirect('home')
 
-        # 既にユーザーがログインしている場合
+        # ログインユーザの場合
         if request.user.is_authenticated:
             if family:
-                
-                # 自分自身を家族登録しようとしていないかチェック
+                # 家族ユーザか確認する
                 if request.user in User.objects.filter(family=family):
                     messages.error(request, "既に家族に所属しています。")
                     return redirect('accounts:user_page')
-                
-                # ログイン済みユーザーを家族に追加
+
+                # ログインユーザに家族IDを更新する
                 request.user.family = family
                 request.user.save()
 
-                # 招待URLを使用済みにする
+                # UUIDを使用済みに更新する
                 family.use_invitation(uuid)
-
                 messages.success(request, '家族登録が完了しました！')
                 return redirect('accounts:user_page')
 
-        # 未ログインの場合はログインページにリダイレクトし、ログイン後に家族登録を再度実行
-        else:
-            # ログイン後に戻るための next パラメータを追加
-            login_url = reverse('accounts:login') + f'?next={request.path}'
-            return redirect(login_url)
+        # UUID以外からアクセスした場合
+        if not uuid:
+            form = SignupForm()
+            return render(request, "accounts/signup.html", context={"form": form})
 
-        # サインアップ画面を表示（未ログインの場合のみ）
-        form = SignupForm()
-        return render(request, "accounts/signup.html", context={"form": form})
+        # ログインユーザでなく、家族に招待された場合
+        if family and not request.user.is_authenticated:
+            form = SignupForm()
+            return render(request, "accounts/signup.html", context={"form": form})
+
+        # すでに登録され、ログアウトされている場合は、ログイン ページにリダイレクト
+        login_url = reverse('accounts:login') + f'?next={request.path}'
+        return redirect(login_url)
 
     def post(self, request, uuid=None):
         form = SignupForm(request.POST)
@@ -72,7 +74,7 @@ class SignupView(View):
         if uuid:
             families = Family.objects.all()  # 全てのFamilyを取得
 
-            # 手動で invitations の中から該当するUUIDを探す
+            # invitationsの中から該当するUUIDを探す
             for fam in families:
                 for invitation in fam.invitations:
                     if invitation['uuid'] == str(uuid) and not invitation['used']:
@@ -106,8 +108,7 @@ class SignupView(View):
             return redirect('home')
 
         return render(request, "accounts/signup.html", context={"form": form})
-    
-    
+       
 class LoginView(View):
     
     def get(self, request):

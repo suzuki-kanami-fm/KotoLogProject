@@ -1,8 +1,6 @@
 {% extends 'common/base.html' %}
 {% block content %}
-<section id="userpage">
-    <h1>ユーザーページ</h1>
-    <article id="user_info">
+{% load static %}
     {% if messages %}
       <div class="alert alert-success">
           {% for message in messages %}
@@ -10,75 +8,87 @@
           {% endfor %}
       </div>
     {% endif %}
-        <h2> {{ user.account_name }}<a class="" href="{% url 'accounts:user_edit' %}">編集</a></h2>
-        <h2>家族情報</h2>
-        <ul>
-            {% for member in family_members %}
-                <li>{{ member.username }}({{ member.account_name }})
-                    <form method="post" action="{% url 'accounts:family_delete' %}" onsubmit="return confirmDelete('{{ member.username }}')">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger">家族から削除</button>
-                    </form>                
-                </li>
-                
-            {% empty %}
-                <li>家族情報が登録されていません。</li>
-            {% endfor %}
-        </ul>
-        <a href="{% url 'accounts:invitation_url' %}">家族招待URLを発行</a>
-        <h2>子ども情報</h2>
-        {{ child_form.non_field_errors }}
-        <ul>
-            {% for child in children %}
-                <li>{{ child.child_name }} ({{ child.birthday }}生)
-                  <form method="post" action="{% url 'accounts:child_delete' child.id %}" onsubmit="return confirmDelete('{{ child.child_name }}')">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger">削除</button>
-                   </form>
-                </li>
-            {% empty %}
-                <li>子ども情報が登録されていません。</li>
-            {% endfor %}
-        </ul>
-        <button type="button" data-bs-toggle="modal" data-bs-target="#addChildModal">子どもを追加する</button>
-    </article>
-    <article id="account_journals">
-    <div id="calendar"></div>
+<section id="userpage" class="d-flex flex-column flex-md-row">
+<aside id="user_info" class="user-info">
+        <h2>
+            <a href="{% url 'accounts:user_edit' %}">{{ user.account_name }}
+                <img src="{% static 'img/user_edit.png' %}" alt="Edit">
+            </a>
+        </h2>
 
-      <h2>最近見た育児記録</h2>
-      <ul>
-        <div id="recentedCarousel" class="carousel slide" data-bs-ride="carousel">
-            <div class="carousel-inner">
-                <div class="carousel-item active">
-                    <div class="row">
+        <!-- Family Information Section -->
+        <h2 data-bs-toggle="collapse" data-bs-target="#familyInfo" aria-expanded="true" aria-controls="familyInfo" class="info-title">
+            家族情報
+        </h2>
+        <div id="familyInfo" class="collapse show">
+        <ul class="user-info-list">
+        {% for member in family_members %}
+            <li class="user-info-item">
+            {{ member.username }} / {{ member.account_name }}
+            <form method="post" action="{% url 'accounts:family_delete' %}" onsubmit="return confirmDelete('{{ member.username }}')">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">削除</button>
+            </form>
+            </li>
+        {% empty %}
+            <li>家族情報が登録されていません。</li>
+        {% endfor %}
+            </ul>
+            <a href="{% url 'accounts:invitation_url' %}">家族招待URLを発行</a>
+        </div>
+
+        <!-- Child Information Section -->
+        <h2 data-bs-toggle="collapse" data-bs-target="#childInfo" aria-expanded="true" aria-controls="childInfo" class="info-title">
+            子ども情報
+        </h2>
+        <div id="childInfo" class="collapse show">
+        <ul class="user-info-list">
+        {% for child in children %}
+            <li class="user-info-item">
+            {{ child.child_name }} / {{ child.birthday }}
+            <form method="post" action="{% url 'accounts:child_delete' child.id %}" onsubmit="return confirmDelete('{{ child.child_name }}')">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">削除</button>
+            </form>
+            </li>
+        {% empty %}
+            <li>子ども情報が登録されていません。</li>
+        {% endfor %}
+            </ul>
+            <button type="button" data-bs-toggle="modal" data-bs-target="#addChildModal">子どもを追加する</button>
+        </div>
+    </aside>
+    <section id="account_journals" class="content-section">
+        <div id="calendar" class="calendar mb-4"></div>
+        <article>
+            <h2 class="journal_title">最近見た育児記録</h2>
+            <div id="recentedCarousel" class="carousel-container mb-4">
+                <button class="carousel-prev" data-target="#recentedCarousel">＜</button>
+                <div class="carousel-track-container">
+                    <div class="carousel-track">
                         {% for journal in recent_journal_objects %}
                             {% include 'journals/childcare_journal_card.html' %}
-                        {% empty %}
-                            <li>最近見た育児記録はありません。</li>
                         {% endfor %}
                     </div>
                 </div>
-            </div>
-        </div>
-      </ul>
-
-    <h2>作成した育児記録</h2>
-      <ul>
-        <div id="createdCarousel" class="carousel slide" data-bs-ride="carousel">
-            <div class="carousel-inner">
-                <div class="carousel-item active">
-                    <div class="row">
-                        {% for journal in user_created_journals %}
-                            {% include 'journals/childcare_journal_card.html' %}
-                        {% empty %}
-                            <li>作成した育児記録はありません。</li>
-                        {% endfor %}
+                <button class="carousel-next" data-target="#recentedCarousel">＞</button>
+            </div>  
+        </article>
+        <article>
+            <h2 class="journal_title">作成した育児記録</h2>
+                <div id="createdCarousel" class="carousel-container mb-4">
+                    <button class="carousel-prev" data-target="#createdCarousel">＜</button>
+                    <div class="carousel-track-container">
+                        <div class="carousel-track">
+                            {% for journal in user_created_journals %}
+                                {% include 'journals/childcare_journal_card.html' %}
+                            {% endfor %}
+                        </div>
                     </div>
-                </div>
-            </div>
-        </div>
-      </ul>
-  </article>    
+                    <button class="carousel-next" data-target="#createdCarousel">＞</button>
+                </div>      
+        </article>
+  </section>    
 </section>
 
 
@@ -118,12 +128,14 @@ document.addEventListener('DOMContentLoaded', function() {
             center: 'title',  // タイトル（年・月）
             right: 'next'  // 次月ボタン
         },
+        eventContent: false,
         dayCellContent: function(info) {
             // ローカルタイムで日付を取得
             const year = info.date.getFullYear();
             const month = String(info.date.getMonth() + 1).padStart(2, '0');  // 月は0から始まるため+1
             const day = String(info.date.getDate()).padStart(2, '0');
             const dateStr = `${year}-${month}-${day}`;  // YYYY-MM-DD形式
+            
 
             // 育児記録がある場合
             if (datesWithRecords.includes(dateStr)) {
@@ -132,9 +144,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // 通常の日付（黒文字表示）
-            return { html: info.date.getDate().toString() };
-        }
+           return { html: `<div style="text-align: center;">${info.date.getDate()}</div>` };
+        },
+        height:400
     });
+
+    $('.fc-daygrid-day-events').hide();
 
     calendar.render();
 });
@@ -144,4 +159,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return confirm(item + 'を本当に削除しますか？');
     }
 </script>
+{% load static %}
+<script src="{% static 'js/function.js' %}"></script>     
 {% endblock %}
