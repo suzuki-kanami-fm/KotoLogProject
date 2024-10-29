@@ -1,13 +1,14 @@
 {% extends 'common/base.html' %}
 {% block content %}
 <div class="container my-5">
+    <h1 class="mb-4">家族招待</h1>
     <div class="alert alert-info">
         <p><strong>利用方法:</strong><br>作成するをクリックし、リンク先URLを表示<br>
         招待したい家族にリンク先を共有しアカウントを登録してもらう<br>
         <small class="text-danger">※発行されたURLは一度利用すると失効します。</small></p>
     </div>
     <div class="text-center my-4">
-        <form method="post">
+        <form method="post" action="{% url 'accounts:invitation_url' %}">
             {% csrf_token %}
             <button type="submit" class="btn btn-primary btn-lg">家族招待URLを作成する</button>
         </form>

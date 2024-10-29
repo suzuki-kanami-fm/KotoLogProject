@@ -300,9 +300,13 @@ class CustomPasswordChangeDoneView(LoginRequiredMixin,PasswordChangeDoneView):
     template_name = 'accounts/password_change_done.html'
     
 class InvitationUrlView(LoginRequiredMixin, View):
-    
-    @transaction.atomic
+
     def get(self, request):
+        # テンプレートのみを返す
+        return render(request, 'accounts/invitation_url.html')
+
+    @transaction.atomic
+    def post(self, request):
         user = request.user
         family = user.family
 
@@ -316,6 +320,7 @@ class InvitationUrlView(LoginRequiredMixin, View):
         invitation = family.generate_invitation()
         invitation_url = request.build_absolute_uri(reverse('accounts:login_with_invite', kwargs={'uuid': invitation['uuid']}))
 
+        # 招待URLをテンプレートに渡してレンダリング
         return render(request, 'accounts/invitation_url.html', {'invitation_url': invitation_url})
 
 class FamilyDeleteView(LoginRequiredMixin, View):

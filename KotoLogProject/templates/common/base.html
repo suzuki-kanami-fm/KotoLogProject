@@ -18,10 +18,10 @@
 <body>
     <header class="navbar navbar-expand-md sticky-top py-3">
         <a class="navbar-brand" href="{% url 'home' %}">
-            <img src="{% static "img/kotolog.png" %}" alt="KotoLog">
+            <img src="{% static "img/kotolog.png" %}" alt="KotoLog" width="100px">
         </a>
 
-        <div class="flex-grow-1 mx-3">
+        <div class="flex-grow-1 mx-3 d-flex justify-content-center align-items-center">
             <form method="GET" action="{% url 'journals:childcare_journal_list' %}" class="d-flex justify-content-center">
                 <span class="d-flex align-items-center">
                     {{ search_form.search_query }}
@@ -42,7 +42,7 @@
             <ul class="navbar-nav ms-auto align-items-center">
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'journals:create_childcare_journal' %}" title="育児記録作成">
-                        <img src="{% static "img/edit.png" %}" alt="育児記録作成" class="d-none d-md-inline">
+                        <img src="{% static "img/edit.png" %}" alt="育児記録作成" class="d-none d-md-inline" width="48px">
                         <span class="d-md-none">育児記録作成</span>
                     </a>
                 </li>
