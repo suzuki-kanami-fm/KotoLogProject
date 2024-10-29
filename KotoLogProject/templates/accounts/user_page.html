@@ -139,8 +139,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // 育児記録がある場合
             if (datesWithRecords.includes(dateStr)) {
+
                 const record = recordsByDate.find(r => r.date === dateStr);
-                return { html: `<a href="{% url 'journals:childcare_journal_list' %}?date={{ date }}">${info.date.getDate()}</a>` };
+                return { html: `<a href="{% url 'journals:childcare_journal_list' %}?date=${record.date}">${info.date.getDate()}</a>` };
             }
 
             // 通常の日付（黒文字表示）

@@ -6,8 +6,8 @@ from .views import (SignupView, LoginView, LogoutView, UserEditView,UserPageView
 app_name='accounts'
 urlpatterns = [
     path('signup/', SignupView.as_view(), name="signup"),
-    path('signup/<uuid:uuid>/', SignupView.as_view(), name='signup_with_invite'),
     path('login/', LoginView.as_view(), name="login"),
+    path('login/<uuid:uuid>/', LoginView.as_view(), name='login_with_invite'),
     path("logout/", LogoutView.as_view(), name="logout"),
     path("user_edit/", UserEditView.as_view(), name="user_edit"),
     path("user_page/", UserPageView.as_view(), name="user_page"),

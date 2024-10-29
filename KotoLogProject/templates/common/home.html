@@ -10,9 +10,9 @@
     {% endif %}
     
     <section class="mb-4">
-        <h2 class="journal_title">最近のKotoLog</h2>
-        <a href="{% url 'journals:childcare_journal_list' %}?segment=public">すべて見る</a>
-        
+        <h2 class="journal_title">最近のKotoLog
+            <a href="{% url 'journals:childcare_journal_list' %}?segment=public" class="link-opacity-75-hover fs-6">すべて見る</a>
+        </h2>       
         <!-- 最近のKotoLog カルーセル -->
         <div id="recentCarousel" class="carousel-container">
             <button class="carousel-prev" data-target="#recentCarousel">＜</button>
@@ -47,8 +47,9 @@
     {% if user.is_authenticated %}
         {% if request.user.family %}
         <section class="mb-4">
-            <h2 class="journal_title">家族のKotoLog</h2>
-            <a href="{% url 'journals:childcare_journal_list' %}?segment=family">すべて見る</a>
+            <h2 class="journal_title">家族のKotoLog
+                <a href="{% url 'journals:childcare_journal_list' %}?segment=family" class="link-opacity-75-hover fs-6">すべて見る</a>
+            </h2>
             <div id="familyCarousel" class="carousel-container">
                 <button class="carousel-prev" data-target="#familyCarousel">＜</button>
                 <div class="carousel-track-container">
@@ -65,8 +66,9 @@
         {% for child_id, journals in child_journals.items %}
             {% if journals %}
             <section class="mb-4">
-                <h2 class="journal_title">{{ journals.0.child.child_name }}のKotoLog</h2>
-                <a href="{% url 'journals:childcare_journal_list' %}?segment=child&child_id={{ child_id }}">すべて見る</a>
+                <h2 class="journal_title">{{ journals.0.child.child_name }}のKotoLog
+                    <a href="{% url 'journals:childcare_journal_list' %}?segment=child&child_id={{ child_id }}" class="link-opacity-75-hover fs-6">すべて見る</a>
+                </h2>
                 <div id="kidCarousel{{ child_id }}" class="carousel-container">
                     <button class="carousel-prev" data-target="#kidCarousel{{ child_id }}">＜</button>
                     <div class="carousel-track-container">
@@ -83,8 +85,9 @@
         {% endfor %}   
         {% endif %}
     <section class="mb-4">
-        <h2 class="journal_title">お気に入りのKotoLog</h2>
-        <a href="{% url 'journals:childcare_journal_list' %}?favorites=true">すべて見る</a>
+        <h2 class="journal_title">お気に入りのKotoLog
+            <a href="{% url 'journals:childcare_journal_list' %}?favorites=true" class="link-opacity-75-hover fs-6">すべて見る</a>
+        </h2>        
         <div id="favoriteCarousel" class="carousel-container">
             <button class="carousel-prev" data-target="#favoriteCarousel">＜</button>
             <div class="carousel-track-container">

@@ -11,7 +11,7 @@ header img{
 }
 header form span{
     background: #FFF;
-    padding: 10px 5px;
+    padding: 0px 5px;
     border-radius: 20px;
     margin: 0 5px;
     font-size: 14px;
@@ -21,7 +21,7 @@ header form span *{
     border: none; 
 }
 header form span select{
-    width: 50px;
+    min-width: 50px;
 }
 header form span button img{
     width: 30px;
@@ -102,7 +102,7 @@ header form span button img{
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.3);
     border: none;
     color: white;
     font-size: 18px;
@@ -147,7 +147,7 @@ header form span button img{
 /*ユーザーページ*/
 #userpage {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
     flex-wrap: wrap;
 }
 
@@ -250,6 +250,9 @@ header form span button img{
 }
 
   @media screen and (max-width: 768px) {
+    .nav-link .d-md-inline{
+        width: 30px;
+    }
     #userpage {
       flex-direction: column;
     }

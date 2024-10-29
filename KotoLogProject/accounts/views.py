@@ -11,15 +11,67 @@ from django.urls import reverse_lazy,reverse
 import uuid,json
 from django.contrib import messages
 from django.db import transaction
-from django.db.models import Prefetch, Count, Case, When, Value, BooleanField,Max,OuterRef, Subquery
+from django.db.models import Prefetch, Count, Case, When, Value, BooleanField,Max,OuterRef, Subquery,Q
 from django.core.serializers.json import DjangoJSONEncoder
 
 class SignupView(View):
 
     def get(self, request, uuid=None):
+        # UUIDが渡されている場合の家族情報の取得
+        family = None
+        if uuid:
+            families = Family.objects.all()
+            
+            # invitationsの中から該当するUUIDを探す
+            for fam in families:
+                for invitation in fam.invitations:
+                    if invitation['uuid'] == str(uuid) and not invitation['used']:
+                        family = fam
+                        break
+                    
+            if not family:
+                messages.error(request, 'この招待URLは無効です。')
+                return redirect('home')
+
+        form = SignupForm()
+        return render(request, "accounts/signup.html", context={"form": form, "uuid": uuid})
+
+    def post(self, request, uuid=None):
+        form = SignupForm(request.POST)
         family = None
 
-        # UUIDが渡されている場合、対応するFamilyを取得
+        if uuid:
+            families = Family.objects.all()
+            
+            # invitationsの中から該当するUUIDを探す
+            for fam in families:
+                for invitation in fam.invitations:
+                    if invitation['uuid'] == str(uuid) and not invitation['used']:
+                        family = fam
+                        break
+                    
+            if not family:
+                messages.error(request, 'この招待URLは無効です。')
+                return redirect('home')
+
+        if form.is_valid():
+            user = form.save(commit=False)
+
+            # UUIDでの家族情報を関連付け
+            if family:
+                user.family = family
+                family.use_invitation(uuid)
+
+            user.save()
+            login(request, user)
+            messages.success(request, '新規登録が完了しました。')
+            return redirect('home')
+
+        return render(request, "accounts/signup.html", context={"form": form})
+       
+class LoginView(View):
+    
+    def get(self, request, uuid=None):
         if uuid:
             families = Family.objects.all()
             
@@ -30,99 +82,59 @@ class SignupView(View):
                         family = fam
                         break
 
-            # 該当するFamilyが見つからなかった場合
+
             if not family:
                 messages.error(request, 'この招待URLは無効です。新しい招待URLを発行してください。')
                 return redirect('home')
 
-        # ログインユーザの場合
-        if request.user.is_authenticated:
-            if family:
-                # 家族ユーザか確認する
-                if request.user in User.objects.filter(family=family):
+            # 既に家族登録されているユーザーがログインしている場合
+            if request.user.is_authenticated:
+                if request.user.family:
                     messages.error(request, "既に家族に所属しています。")
                     return redirect('accounts:user_page')
 
-                # ログインユーザに家族IDを更新する
+                # 家族登録が未済のログイン済みユーザーを登録
                 request.user.family = family
                 request.user.save()
-
-                # UUIDを使用済みに更新する
                 family.use_invitation(uuid)
-                messages.success(request, '家族登録が完了しました！')
+                messages.success(request, "家族登録が完了しました！")
                 return redirect('accounts:user_page')
 
-        # UUID以外からアクセスした場合
-        if not uuid:
-            form = SignupForm()
-            return render(request, "accounts/signup.html", context={"form": form})
+            # 未ログインユーザーにはメッセージを出してそのままログイン画面表示
+            messages.info(request, "家族登録を行うためにログインしてください。")
 
-        # ログインユーザでなく、家族に招待された場合
-        if family and not request.user.is_authenticated:
-            form = SignupForm()
-            return render(request, "accounts/signup.html", context={"form": form})
-
-        # すでに登録され、ログアウトされている場合は、ログイン ページにリダイレクト
-        login_url = reverse('accounts:login') + f'?next={request.path}'
-        return redirect(login_url)
+        return render(request, "accounts/login.html", context={'uuid': uuid})
 
     def post(self, request, uuid=None):
-        form = SignupForm(request.POST)
-        family = None
-
-        # UUIDが渡されている場合、対応するFamilyを取得
-        if uuid:
-            families = Family.objects.all()  # 全てのFamilyを取得
-
-            # invitationsの中から該当するUUIDを探す
-            for fam in families:
-                for invitation in fam.invitations:
-                    if invitation['uuid'] == str(uuid) and not invitation['used']:
-                        family = fam
-                        break
-
-            # 該当するFamilyが見つからなかった場合
-            if not family:
-                messages.error(request, 'この招待URLは無効です。新しい招待URLを発行してください。')
-                return redirect('home')  # 無効な場合はホーム画面にリダイレクト
-
-        # 既に家族に所属しているユーザーを防ぐ
-        if request.user.is_authenticated and request.user.family:
-            messages.error(request, "既に家族に所属しています。")
-            return redirect('home')
-
-        # 新規登録の場合
+        form = LoginForm(request.POST)
+        
         if form.is_valid():
-            user = form.save(commit=False)
-
-            # 家族が存在する場合はユーザーに関連付ける
-            if family:
-                user.family = family
-                family.use_invitation(uuid)
-
-            user.save()
-
-            # ユーザーをログインさせる
+            user = form.user_cache
             login(request, user)
 
-            return redirect('home')
+            # UUIDが存在する場合、家族情報にユーザーを追加
+            if uuid:
+                families = Family.objects.all()
+                
+                # invitationsの中から該当するUUIDを探す
+                for fam in families:
+                    for invitation in fam.invitations:
+                        if invitation['uuid'] == str(uuid) and not invitation['used']:
+                            family = fam
+                            break
+                
+                if family and user.family is None:
+                    user.family = family
+                    user.save()
+                    family.use_invitation(uuid)
+                    messages.success(request, "家族登録が完了しました！")
+                    return redirect('accounts:user_page')
+                elif family:
+                    messages.info(request, "既に家族登録されています。")
 
-        return render(request, "accounts/signup.html", context={"form": form})
-       
-class LoginView(View):
-    
-    def get(self, request):
-        return render(request, "accounts/login.html")
-    
-    def post(self,request):
-        form = LoginForm(request.POST)
-        if form.is_valid():
-            login(request, form.user)
             return redirect("home")
-        
-        return render(request, "accounts/login.html", context={
-            "form": form
-        }) 
+
+        return render(request, "accounts/login.html", context={'form': form})
 
 class LogoutView(LoginRequiredMixin, LogoutView):
      template_name = "common/home.html"
@@ -156,26 +168,22 @@ class UserPageView(LoginRequiredMixin, View):
     def get(self, request):
         user = request.user
         form = UserPageForm(instance=user)
-               
+
         # 家族が存在する場合は家族情報と子ども情報を取得
         family, family_members, children = self.get_family_info(user)    
 
         # カレンダー表示用のクエリを発行
         if family:
-            family_members = User.objects.filter(family=family)
-            
-            records_by_date = ChildcareJournal.objects.filter(user__in=family_members).values('published_on').annotate(
-                record_count=Count('id')).order_by('published_on')
+            records_by_date = ChildcareJournal.objects.filter(
+                Q(user__in=family_members) | Q(user=user)).values('published_on').order_by('published_on')
             records_by_date = [
                 {
-                    'date': record['published_on'].strftime('%Y-%m-%d'),
-                    'count': record['record_count']
+                    'date': record['published_on'].strftime('%Y-%m-%d')
                 }
                 for record in records_by_date
             ]
         else:
             records_by_date = []
-
 
         # 最近見た育児記録の最新のアクセス時間を持つレコードを取得
         latest_recent_journals = (
@@ -217,6 +225,7 @@ class UserPageView(LoginRequiredMixin, View):
         
 
         child_form = ChildForm()
+        
 
         # コンテキストに家族情報、子ども情報、フォームを追加
         context = {
@@ -271,6 +280,7 @@ class UserPageView(LoginRequiredMixin, View):
     # 家族情報と子ども情報の取得を行う
     def get_family_info(self, user):
         family = user.family
+
         if family:
             family_members = User.objects.filter(family=family).exclude(id=user.id)
             children = Child.objects.filter(family=family).order_by('birthday')
@@ -289,12 +299,11 @@ class CustomPasswordChangeView(PasswordChangeView):
 class CustomPasswordChangeDoneView(LoginRequiredMixin,PasswordChangeDoneView):
     template_name = 'accounts/password_change_done.html'
     
-
 class InvitationUrlView(LoginRequiredMixin, View):
     
-    @transaction.atomic  # 招待URL発行の競合を防ぐ
+    @transaction.atomic
     def get(self, request):
-        user = request.user       
+        user = request.user
         family = user.family
 
         # 家族が存在しない場合、新しいFamilyを作成し、ユーザーを関連付ける
@@ -303,12 +312,12 @@ class InvitationUrlView(LoginRequiredMixin, View):
             user.family = family
             user.save()
 
-        # 新しい招待URLを発行
+        # 新しい招待URLを発行し、`login_with_invite`にリダイレクトするリンクを生成
         invitation = family.generate_invitation()
-        invitation_url = request.build_absolute_uri(reverse('accounts:signup_with_invite', kwargs={'uuid': invitation['uuid']}))
-        
+        invitation_url = request.build_absolute_uri(reverse('accounts:login_with_invite', kwargs={'uuid': invitation['uuid']}))
+
         return render(request, 'accounts/invitation_url.html', {'invitation_url': invitation_url})
-    
+
 class FamilyDeleteView(LoginRequiredMixin, View):
 
     def post(self, request):

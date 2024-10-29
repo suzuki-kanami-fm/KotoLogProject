@@ -135,19 +135,14 @@ class ChildcareJournalDetailView(View):
 class HomeView(View):
     def get(self, request):
 
+        # 公開されている育児記録
+        public_journals = get_top_n(ChildcareJournal.objects.filter(is_public=True).select_related('user'))
+                
         if request.user.is_authenticated:
             family_users = User.objects.filter(family=request.user.family)
             children = Child.objects.filter(family=request.user.family)
 
-            # 各セグメントのデータ取得
-            # 公開されている育児記録
-            public_journals = get_favorite_flagged_queryset(
-                get_top_n(ChildcareJournal.objects.filter(
-                        Q(is_public=True) | Q(user__in=family_users)
-                    ).select_related('user')),
-                request.user
-            )
-            
+            # 各セグメントのデータ取得            
             # 家族の育児記録
             family_journals = get_favorite_flagged_queryset(
                 get_top_n(ChildcareJournal.objects.filter(user__in=family_users).select_related('user')),
@@ -188,9 +183,6 @@ class HomeView(View):
             }
         else:
         
-            # 公開されている育児記録
-            public_journals = get_top_n(ChildcareJournal.objects.filter(is_public=True).select_related('user'))
-                
             #　閲覧回数の多い育児記録(公開されているもののみ)
             popular_journals = get_top_n(ChildcareJournal.objects.filter(is_public=True).annotate(count=Count('impression_count')).order_by('-count').select_related('user'))
 
@@ -213,23 +205,24 @@ class ChildcareJournalListView(View):
         # すべての育児記録を取得
         queryset = ChildcareJournal.objects.all()
 
-        # フィルター未選択の場合のデフォルト検索条件: 
-        # ログインユーザー：公開されている育児記録 または 家族の育児記録
-        # 未ログインユーザー：公開されている育児記録
-        if request.user.is_authenticated:
-            default_filter = Q(is_public=True) | Q(user__family=user.family)
-        else:
-            default_filter = Q(is_public=True)
-            
-        queryset = queryset.filter(default_filter)
-
         # 検索フォームの値セット
         search_query = query_params.get('search_query')
-        filter_option = query_params.get('filter_option')
+        filter_option = query_params.get('segment')
         child_id = query_params.get('child')
 
         # キーワード検索
         if search_query:
+            
+            # フィルター未選択の場合のデフォルト検索条件: 
+            # ログインユーザー：公開されている育児記録 または 家族の育児記録
+            # 未ログインユーザー：公開されている育児記録
+            if request.user.is_authenticated:
+                default_filter = Q(is_public=True) | Q(user__family=user.family)
+            else:
+                default_filter = Q(is_public=True)
+                
+            queryset = queryset.filter(default_filter)
+            
             queryset = queryset.filter(
                 Q(title__icontains=search_query) | 
                 Q(content__icontains=search_query) | 
@@ -239,11 +232,17 @@ class ChildcareJournalListView(View):
         # フィルタリング処理
         if filter_option == 'public':
             queryset = queryset.filter(is_public=True)
+            
         elif filter_option == 'family' and user.is_authenticated:
+
             queryset = queryset.filter(user__family=user.family)
-        elif filter_option and filter_option.isdigit():
+        
+        elif filter_option == 'child':
+
+            param_child_id = query_params.get("child_id")
             # 子どもIDに基づいてフィルタリング
-            queryset = queryset.filter(child_id=int(filter_option))
+            queryset = queryset.filter(child_id=param_child_id)
+        
         elif filter_option == 'favorites' and user.is_authenticated:
             queryset = queryset.filter(favorite__user=user)
 
@@ -256,12 +255,9 @@ class ChildcareJournalListView(View):
         if filter_date:
             queryset = queryset.filter(published_on=filter_date)
 
-
         if request.user.is_authenticated:
-           
             # 公開日付順に並べる
             queryset = get_favorite_flagged_queryset(queryset.order_by('-published_on'),user)
-         
         else:
             queryset = queryset.order_by('-published_on')
        
@@ -269,6 +265,7 @@ class ChildcareJournalListView(View):
             'childcare_journals': queryset,
             'search_form': search_form,
         }
+        print(queryset.query)
         return render(request, 'journals/childcare_journal_list.html', context)
 
 

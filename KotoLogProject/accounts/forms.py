@@ -30,17 +30,21 @@ class SignupForm(UserCreationForm):
 class LoginForm(forms.Form):
     email = forms.EmailField()
     password = forms.CharField()
+    user_cache = None  
     
     def clean(self):
         email = self.cleaned_data.get("email")
         password = self.cleaned_data.get("password")
-        self.user = authenticate(email=email, password=password)
+        self.user_cache = authenticate(email=email, password=password) 
         
-        if self.user is None:
+        if self.user_cache is None:
             raise forms.ValidationError("認証に失敗しました")
         
         return self.changed_data
 
+    def get_user(self):
+        return self.user_cache
+    
 class UserEditForm(UserChangeForm):
     class Meta:
         model = User

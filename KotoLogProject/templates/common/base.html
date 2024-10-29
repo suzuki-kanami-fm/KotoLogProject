@@ -1,39 +1,50 @@
 <!DOCTYPE html>
 <html lang="ja">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">    
-        {% load static %}
-        <link rel="stylesheet" href="{% static "css/reset.css" %}">    
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    
+    {% load static %}
+    <link rel="stylesheet" href="{% static "css/reset.css" %}">    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
-        <link rel="stylesheet" href="{% static "css/style.css" %}">
-        <title>KotoLog</title>
-    </head>
-   <body>
-    <header class="navbar navbar-expand-md sticky-top py-3 text-center">
-        <a class="" href="{% url 'home' %}"><img src="{% static "img/kotolog.png" %}" alt="KotoLog"></a>
-        <form method="GET" action="{% url 'journals:childcare_journal_list' %}">
-            <span>
-                {{ search_form.search_query }}
-                {{ search_form.filter_option }}
-                <button type="submit" class=""><img src="{% static "img/search.png" %}" alt="検索"></button>                
-            </span>
+    <link rel="stylesheet" href="{% static "css/style.css" %}">
+    <title>KotoLog</title>
+</head>
+<body>
+    <header class="navbar navbar-expand-md sticky-top py-3">
+        <a class="navbar-brand" href="{% url 'home' %}">
+            <img src="{% static "img/kotolog.png" %}" alt="KotoLog">
+        </a>
 
-        </form>
+        <div class="flex-grow-1 mx-3">
+            <form method="GET" action="{% url 'journals:childcare_journal_list' %}" class="d-flex justify-content-center">
+                <span class="d-flex align-items-center">
+                    {{ search_form.search_query }}
+                    {{ search_form.filter_option }}
+                    <button type="submit" class="btn">
+                        <img src="{% static "img/search.png" %}" alt="検索">
+                    </button>                
+                </span>
+            </form>
+        </div>
+
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
+
         {% if user.is_authenticated %}
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
+            <ul class="navbar-nav ms-auto align-items-center">
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'journals:create_childcare_journal' %}" title="育児記録作成"><img src="{% static "img/edit.png" %}" alt="育児記録作成"></a>
+                    <a class="nav-link" href="{% url 'journals:create_childcare_journal' %}" title="育児記録作成">
+                        <img src="{% static "img/edit.png" %}" alt="育児記録作成" class="d-none d-md-inline">
+                        <span class="d-md-none">育児記録作成</span>
+                    </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'journals:childcare_journal_list' %}?favorites=true">お気に入り</a>
@@ -42,17 +53,14 @@
                     <a class="nav-link" href="{% url 'accounts:user_page' %}">アカウント情報</a>
                 </li>
                 <li class="nav-item">
-                    <form method="post" action="{% url 'accounts:logout' %}">
-                    {% csrf_token %}
-                    <button type="submit" class="nav-link">ログアウト</button>
-                    </form>
+                    <a class="nav-link" href="{% url 'accounts:logout' %}">ログアウト</a>
                 </li>
             </ul>
         </div>
         {% else %}
-            <a class="" href="{% url 'accounts:login' %}">ログイン</a>
+            <a class="btn ms-auto" href="{% url 'accounts:login' %}">ログイン</a>
         {% endif %}
     </header>
-      {% block content %}{% endblock %}
-   </body>
+    {% block content %}{% endblock %}
+</body>
 </html>
