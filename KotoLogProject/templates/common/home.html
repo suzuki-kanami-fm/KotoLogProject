@@ -37,6 +37,8 @@
                 <div class="carousel-track">
                     {% for journal in popular_journals %}
                         {% include 'journals/childcare_journal_card.html' %}
+                    {% empty %}
+                    <p>よく見られている育児記録はありません。</p>                        
                     {% endfor %}
                 </div>
             </div>
@@ -56,6 +58,8 @@
                     <div class="carousel-track">
                         {% for journal in family_journals %}
                             {% include 'journals/childcare_journal_card.html' %}
+                        {% empty %}
+                        <p>家族の育児記録はありません。</p>                        
                         {% endfor %}
                     </div>
                 </div>
@@ -75,6 +79,8 @@
                         <div class="carousel-track">
                             {% for journal in journals %}
                                 {% include 'journals/childcare_journal_card.html' %}
+                            {% empty %}
+                            <p>{{ journals.0.child.child_name }}の育児記録はありません。</p>                                
                             {% endfor %}
                         </div>
                     </div>
@@ -94,6 +100,8 @@
                 <div class="carousel-track">
                     {% for journal in favorite_journals %}
                         {% include 'journals/childcare_journal_card.html' %}
+                    {% empty %}
+                    <p>お気に入りの育児記録はありません。</p>                        
                     {% endfor %}
                 </div>
             </div>

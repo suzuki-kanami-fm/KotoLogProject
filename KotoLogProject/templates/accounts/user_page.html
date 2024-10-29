@@ -68,6 +68,8 @@
                     <div class="carousel-track">
                         {% for journal in recent_journal_objects %}
                             {% include 'journals/childcare_journal_card.html' %}
+                        {% empty%}
+                        <p>最近見た育児記録はありません。</p>
                         {% endfor %}
                     </div>
                 </div>
@@ -82,6 +84,8 @@
                         <div class="carousel-track">
                             {% for journal in user_created_journals %}
                                 {% include 'journals/childcare_journal_card.html' %}
+                            {% empty%}
+                            <p>最近作成した育児記録はありません。</p>  
                             {% endfor %}
                         </div>
                     </div>
