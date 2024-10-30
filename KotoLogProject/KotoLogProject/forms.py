@@ -5,12 +5,13 @@ class SearchJournalForm(forms.Form):
     search_query = forms.CharField(
         required=False, 
         label="", 
-        widget=forms.TextInput(attrs={'placeholder': 'キーワード'})
+        widget=forms.TextInput(attrs={'placeholder': 'キーワード', 'class': 'form-control'})
     )
     
     filter_option = forms.ChoiceField(
         required=False, 
         label="",
+        widget=forms.Select(attrs={'class': 'form-select'}),
         choices=[]  # choicesは__init__で動的に設定
     )
 

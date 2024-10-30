@@ -7,23 +7,72 @@ header a{
     padding:0px 10px;
 }
 
-header form span{
+header .search-form {
     background: #FFF;
     padding: 0px 5px;
     border-radius: 20px;
-    margin: 0 5px;
+    margin: 10px 5px;
     font-size: 14px;
 }
-header form span *{
-    background: transparent;
+header .search-form *{
     border: none; 
 }
-header form span select{
-    min-width: 50px;
+header .search-form input{
+    background: transparent;
 }
-header form span button img{
+header .search-form select{
+    min-width: 150px;
+}
+header .search-form img{
     width: 30px;
 }
+header .navbar-collapse{
+    flex-grow: 0;
+}
+/* ハンバーガーメニューアイコンのベーススタイル */
+.navbar-toggler {
+    border: none;
+    background: none;
+}
+/* 三本線アイコン */
+.navbar-toggler-icon {
+    position: relative;
+    width: 24px;
+    height: 2px;
+    background-color: #333;
+    display: inline-block;
+    transition: all 0.3s;
+    background-image: none;
+}
+.navbar-toggler-icon::before,
+.navbar-toggler-icon::after {
+    content: "";
+    position: absolute;
+    width: 24px;
+    height: 2px;
+    background-color: #333;
+    transition: all 0.3s;
+}
+.navbar-toggler-icon::before {
+    top: -8px;
+}
+.navbar-toggler-icon::after {
+    top: 8px;
+}
+
+/* メニュー開閉時のアイコン変更 */
+#menuToggle:checked + label .navbar-toggler-icon {
+    background-color: transparent;
+}
+#menuToggle:checked + label .navbar-toggler-icon::before {
+    transform: rotate(45deg);
+    top: 0;
+}
+#menuToggle:checked + label .navbar-toggler-icon::after {
+    transform: rotate(-45deg);
+    top: 0;
+}
+
 /* base.html */
 
 #userpage #account_journals #calendar{
