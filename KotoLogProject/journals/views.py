@@ -105,15 +105,26 @@ class ChildcareJournalDetailView(View):
             )
             access_log.save()
             
-        data = {
-            'title': journal.title,
-            'content': journal.content,
-            'published_on': journal.published_on.strftime('%Y-%m-%d'),
-            'is_public': journal.is_public,
-            'image_url': journal.image_url.url if journal.image_url else None,
-            'is_owner': journal.user == request.user,
-            'is_favorited': Favorite.objects.filter(user=request.user, childcare_journal=journal).exists(),
-        }
+            data = {
+                'title': journal.title,
+                'content': journal.content,
+                'published_on': journal.published_on.strftime('%Y/%m/%d'),
+                'is_public': journal.is_public,
+                'image_url': journal.image_url.url if journal.image_url else None,
+                'is_owner': journal.user == request.user,
+                'is_favorited': Favorite.objects.filter(user=request.user, childcare_journal=journal).exists(),
+            }
+        else:
+            data = {
+                'title': journal.title,
+                'content': journal.content,
+                'published_on': journal.published_on.strftime('%Y/%m/%d'),
+                'is_public': journal.is_public,
+                'image_url': journal.image_url.url if journal.image_url else None,
+                'is_owner': journal.user == request.user,
+                'is_favorited': "",
+            }            
+            
         return JsonResponse(data)
 
     def post(self, request, journal_id):
@@ -265,7 +276,7 @@ class ChildcareJournalListView(View):
             'childcare_journals': queryset,
             'search_form': search_form,
         }
-        print(queryset.query)
+
         return render(request, 'journals/childcare_journal_list.html', context)
 
 
@@ -273,7 +284,7 @@ class DeleteChildcareJournalsView(View):
     def post(self, request):
         # POSTリクエストから選択された育児記録のIDを取得
         selected_journal_ids = request.POST.getlist('selected_journals')
-        print(selected_journal_ids)
+
         # ユーザーが作成した育児記録のみ削除可能
         journals_to_delete = ChildcareJournal.objects.filter(id__in=selected_journal_ids, user=request.user)
 

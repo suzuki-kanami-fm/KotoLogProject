@@ -17,24 +17,19 @@
         <a class="navbar-brand" href="{% url 'home' %}">
             <img src="{% static "img/kotolog.png" %}" alt="KotoLog" width="100px">
         </a>
-
-        <!-- チェックボックスでアイコン制御 -->
-        <input type="checkbox" id="menuToggle" class="d-none">
-        <label for="menuToggle" class="navbar-toggler">
-            <span class="navbar-toggler-icon"></span>
-        </label>
-
         <!-- 検索フォーム -->
         <div class="d-none d-md-flex mx-auto">
             <form method="GET" action="{% url 'journals:childcare_journal_list' %}" class="d-flex search-form">
                 {{ search_form.search_query }}
                 {{ search_form.filter_option }}
-                <button type="submit" class="btn btn-outline-secondary">
+                <button type="submit" class="btn">
                     <img src="{% static "img/search.png" %}" alt="検索" width="20px">
                 </button>
             </form>
         </div>
-
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
         <!-- ハンバーガーメニュー内のコンテンツ -->
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto align-items-center">
@@ -43,23 +38,29 @@
                     <form method="GET" action="{% url 'journals:childcare_journal_list' %}" class="d-flex search-form">
                         {{ search_form.search_query }}
                         {{ search_form.filter_option }}
-                        <button type="submit" class="btn btn-outline-secondary">
+                        <button type="submit" class="btn">
                             <img src="{% static "img/search.png" %}" alt="検索" width="20px">
                         </button>
                     </form>
                 </li>
                 {% if user.is_authenticated %}
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'journals:create_childcare_journal' %}">
-                        <img src="{% static "img/edit.png" %}" alt="育児記録作成" width="24px">
+                    <a class="nav-link" href="{% url 'journals:create_childcare_journal' %}" title="育児記録作成">
+                        <img src="{% static "img/edit.png" %}" alt="育児記録作成" width="36px">
                         <span class="d-md-none">育児記録作成</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'journals:childcare_journal_list' %}?favorites=true">お気に入り</a>
+                    <a class="nav-link" href="{% url 'journals:childcare_journal_list' %}?favorites=true" title"お気に入り">
+                        <img src="{% static "img/favorite.png" %}" alt="お気に入り" width="24px">
+                        <span class="d-md-none">お気に入り</span>
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'accounts:user_page' %}">アカウント情報</a>
+                    <a class="nav-link" href="{% url 'accounts:user_page' %}" title="アカウント情報">
+                        <img src="{% static "img/kkrn_icon_user_5.png" %}" alt="アカウント情報" width="36px">
+                        <span class="d-md-none">アカウント情報</span>
+                    </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'accounts:logout' %}">ログアウト</a>

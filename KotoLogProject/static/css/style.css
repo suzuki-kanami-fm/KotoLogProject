@@ -52,6 +52,7 @@ header .navbar-collapse{
     height: 2px;
     background-color: #333;
     transition: all 0.3s;
+    left: 0;
 }
 .navbar-toggler-icon::before {
     top: -8px;
@@ -61,19 +62,26 @@ header .navbar-collapse{
 }
 
 /* メニュー開閉時のアイコン変更 */
-#menuToggle:checked + label .navbar-toggler-icon {
+.navbar-toggler[aria-expanded="true"] .navbar-toggler-icon {
     background-color: transparent;
 }
-#menuToggle:checked + label .navbar-toggler-icon::before {
+.navbar-toggler[aria-expanded="true"] .navbar-toggler-icon::before {
     transform: rotate(45deg);
     top: 0;
 }
-#menuToggle:checked + label .navbar-toggler-icon::after {
+.navbar-toggler[aria-expanded="true"] .navbar-toggler-icon::after {
     transform: rotate(-45deg);
     top: 0;
 }
-
-/* base.html */
+header .nav-item img{
+    transition: all 0.3s;
+}
+header .nav-item img:hover{
+    filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.3));
+}
+header .nav-item .btn-outline-secondary:hover{
+    background-color: none;
+}
 
 #userpage #account_journals #calendar{
     .fc-daygrid-day-number a {

@@ -18,5 +18,4 @@ class SearchFormView(View):
     
     def get(self, request):
         form = SearchJournalForm(user=request.user)
-        print("test",form)
         return render(request, 'common/base.html',{'search_form': form})

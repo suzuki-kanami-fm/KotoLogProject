@@ -3,75 +3,80 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
+                <h5 id="modal-title" class="modal-title d-inline"></h5>
+                {% if user.is_authenticated %}
+                    <form method="POST" id="favoriteForm" action="" class="d-inline ms-3">
+                        {% csrf_token %}
+                        <button type="submit" name="favorite_action" id="favorite-btn" class="btn btn-link p-0" style="font-size: 1.5rem;">
+                            ☆
+                        </button>
+                    </form>
+                {% endif %}
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="閉じる"></button>
             </div>
-            <div class="modal-body">
-                <h2 id="modal-title"></h2>
-                <p id="modal-content"></p>
-                <img id="modal-image" src="" alt="Journal Image" style="display: none; max-width: 100%;">
+            <div class="modal-body d-flex justify-content-between">
+                <div>
+                    <p id="modal-content" class="mb-3"></p>
+                </div>
+                <div>
+                    <img id="modal-image" src="" alt="Journal Image/Video" style="width: 200px; height: auto;">
+                </div>
             </div>
             <div class="modal-footer">
-                <form method="POST" id="favoriteForm" action="">
-                    {% csrf_token %}
-                    <button type="submit" name="favorite_action" id="favorite-btn"></button>
-                </form>
-                <!-- 編集ボタンのリンクを動的に設定する -->
-                <a href="#" id="edit-btn">編集</a>
+                <a href="#" id="edit-btn" class="btn btn-link">編集</a>
             </div>
         </div>
     </div>
 </div>
+
 <script>
 $(document).ready(function() {
     const journalModal = $('#journalModal');
 
     journalModal.on('show.bs.modal', function(event) {
-        const button = $(event.relatedTarget); // モーダルをトリガーしたボタン
-        const journalId = button.data('id'); // 育児記録のIDを取得
+        const button = $(event.relatedTarget);
+        const journalId = button.data('id');
         $('#favoriteForm').attr('action', `/journals/journal_detail/${journalId}/`);
 
-        // Ajaxで詳細データを取得
         $.ajax({
             url: `/journals/journal_detail/${journalId}/`,
             method: 'GET',
             dataType: 'json',
             success: function(data) {
-                // モーダル内の要素にデータをセット
-                $('#modal-title').text(data.title);
+                $('#modal-title').text(data.title + " (" + data.published_on + ")");
                 $('#modal-content').text(data.content);
-
                 if (data.image_url) {
                     $('#modal-image').attr('src', data.image_url).show();
                 } else {
                     $('#modal-image').hide();
                 }
 
+                // お気に入りボタンの設定
                 const favoriteBtn = $('#favorite-btn');
-                if(data.is_favorited ){
-                    favoriteBtn.text("お気に入り解除");
-                    favoriteBtn.attr('name', 'remove_from_favorites'); // ボタンのname属性を設定
-                }else{
-                    favoriteBtn.text("お気に入り登録");
-                    favoriteBtn.attr('name', 'add_to_favorites'); // ボタンのname属性を設定
-                }             
+                if (data.is_favorited) {
+                    favoriteBtn.text("★");
+                    favoriteBtn.attr('name', 'remove_from_favorites');
+                    favoriteBtn.addClass("text-primary");  // 塗りつぶしスタイル
+                } else {
+                    favoriteBtn.text("☆");
+                    favoriteBtn.attr('name', 'add_to_favorites');
+                    favoriteBtn.removeClass("text-primary");  // 白抜きスタイル
+                }
 
                 const editBtn = $('#edit-btn');
                 if (data.is_owner) {
                     editBtn.show();
-                    editBtn.attr ('href', `/journals/edit_childcare_journal/${journalId}/`);
+                    editBtn.attr('href', `/journals/edit_childcare_journal/${journalId}/`);
                 } else {
                     editBtn.hide();
                 }
 
-                // お気に入りボタンのクリックイベント
                 $('#favoriteForm').off('submit').on('submit', function(event) {
-                    event.preventDefault(); // デフォルトのフォーム送信を防ぐ
-
+                    event.preventDefault();
                     const formData = new FormData();
-                    formData.append('csrfmiddlewaretoken', $('input[name="csrfmiddlewaretoken"]').val());  // CSRFトークンを追加
+                    formData.append('csrfmiddlewaretoken', $('input[name="csrfmiddlewaretoken"]').val());
                     formData.append(favoriteBtn.attr('name'), 'true');
 
-                    // AjaxでPOSTリクエストを送信
                     $.ajax({
                         url: `/journals/journal_detail/${journalId}/`,
                         method: 'POST',
@@ -92,7 +97,6 @@ $(document).ready(function() {
             },
             error: function(xhr, status, error) {
                 console.error('Error:', error);
-                console.error('Response:', xhr.responseText); // レスポンス内容を表示
             }
         });
     });
