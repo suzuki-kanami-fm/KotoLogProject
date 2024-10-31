@@ -74,7 +74,7 @@ class LoginView(View):
     def get(self, request, uuid=None):
         if uuid:
             families = Family.objects.all()
-            
+            family = ""
             # invitationsの中から該当するUUIDを探す
             for fam in families:
                 for invitation in fam.invitations:
