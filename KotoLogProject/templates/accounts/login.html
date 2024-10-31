@@ -25,7 +25,11 @@
                         <button type="submit" class="btn btn-primary w-100">ログイン</button>
                     </form>
                     {{ form.errors }}
+                    {% if uuid %}
+                    <a href="{% url 'accounts:signup_with_invite' uuid %}" class="btn btn-link">新規登録</a>
+                    {% else %}
                     <a href="{% url 'accounts:signup' %}" class="btn btn-link">新規登録</a>
+                    {% endif %}
                 </div>
             </div>
         </div>

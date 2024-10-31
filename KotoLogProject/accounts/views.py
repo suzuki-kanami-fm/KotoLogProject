@@ -82,7 +82,6 @@ class LoginView(View):
                         family = fam
                         break
 
-
             if not family:
                 messages.error(request, 'この招待URLは無効です。新しい招待URLを発行してください。')
                 return redirect('home')
