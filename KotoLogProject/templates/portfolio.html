@@ -76,6 +76,7 @@
         <p class="text-end"><a href="{% url 'home' %}" class="btn btn-primary btn-lg">アプリへ</a></p>
     </section>      
     <section class="m-1">
+      <h3>機能紹介</h3>
       <div id="portfoliocarousel" class="carousel slide">
         <div class="carousel-indicators">
           <button type="button" data-bs-target="#portfoliocarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
@@ -139,6 +140,15 @@
         </button>
       </div>
     </section>
+    <section class="m-1">
+      <h3>作成資料</h3>
+      <ul class="list-group  list-group-horizontal">
+        <li class="list-group-item list-group-item-action"><a href="{% static "file/KotoLog企画書.pdf" %}">企画書</a></li>        
+        <li class="list-group-item list-group-item-action"><a href="{% static "file/画面遷移図.drawio.pdf" %}">画面遷移図</a></li>
+        <li class="list-group-item list-group-item-action"><a href="{% static "file/ER図.pdf" %}">ER図</a></li>
+      </ul>
+
+    </section>    
 <script>
 $(document).ready(function(){
     $('#portfoliocarousel').carousel({
