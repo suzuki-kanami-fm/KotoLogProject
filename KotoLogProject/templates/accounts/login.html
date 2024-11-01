@@ -17,14 +17,18 @@
                         <div class="mb-3">
                             <label for="email" class="form-label">メールアドレス</label>
                             <input type="email" class="form-control" id="email" name="email" value="{{ form.email.value|default:'' }}">
+                            {{ form.email.errors }}
                         </div>
                         <div class="mb-3">
                             <label for="password" class="form-label">パスワード</label>
                             <input type="password" class="form-control" id="password" name="password" value="{{ form.name.value|default:'' }}">
+                            {{ form.password.errors }}
                         </div>
                         <button type="submit" class="btn btn-primary w-100">ログイン</button>
                     </form>
-                    {{ form.errors }}
+                    {% for error in form.non_field_errors %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                    {% endfor%}
                     {% if uuid %}
                     <a href="{% url 'accounts:signup_with_invite' uuid %}" class="btn btn-link">新規登録</a>
                     {% else %}

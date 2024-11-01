@@ -303,7 +303,9 @@ header .nav-item .btn-outline-secondary:hover{
 #childcare_journal_list .cards{
     width: 100%;
 }
-
+.errorlist{
+    color:red;
+}
   @media screen and (max-width: 768px) {
     .nav-link .d-md-inline{
         width: 30px;

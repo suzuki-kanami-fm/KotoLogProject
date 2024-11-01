@@ -24,7 +24,7 @@
             <form method="GET" action="{% url 'journals:childcare_journal_list' %}" class="d-flex search-form">
                 {{ search_form.search_query }}
                 {{ search_form.filter_option }}
-                <button type="submit" class="btn">
+                <button type="submit" class="btn search-btn">
                     <img src="{% static "img/search.png" %}" alt="検索" width="20px">
                 </button>
             </form>
@@ -40,7 +40,7 @@
                     <form method="GET" action="{% url 'journals:childcare_journal_list' %}" class="d-flex search-form">
                         {{ search_form.search_query }}
                         {{ search_form.filter_option }}
-                        <button type="submit" class="btn">
+                        <button type="submit" class="btn search-btn">
                             <img src="{% static "img/search.png" %}" alt="検索" width="20px">
                         </button>
                     </form>
@@ -77,5 +77,19 @@
     </header>
 
     {% block content %}{% endblock %}
+<script>
+$(document).ready(function() {
+    $('.search-btn').on('click', function(e) {
+        let searchQuery = $('#id_search_query').val();
+        let filterOption = $('#id_filter_option').val();
+    
+            if (searchQuery === '' && filterOption === '') {
+
+                alert('検索キーワードまたはフィルターオプションのいずれかを入力してください。');
+                return false;
+            }
+    });
+});
+</script>
 </body>
 </html>

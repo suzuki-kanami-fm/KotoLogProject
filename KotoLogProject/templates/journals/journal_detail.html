@@ -85,7 +85,8 @@ $(document).ready(function() {
                         contentType: false,
                         success: function(result) {
                             if (result.success) {
-                                favoriteBtn.text(result.is_favorited ? "お気に入り解除" : "お気に入り追加");
+                                favoriteBtn.text(result.is_favorited ? "★" : "☆");
+                                favoriteBtn.attr('name', result.is_favorited ?'remove_from_favorites':'add_to_favorites');
                                 alert(result.message);
                             }
                         },

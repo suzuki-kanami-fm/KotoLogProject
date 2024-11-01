@@ -35,7 +35,7 @@ class SearchJournalForm(forms.Form):
             # 子どもごとのフィルタも追加
             children = Child.objects.filter(family=user.family)
             for child in children:
-                filter_choices.append((str(child.id), f"{child.child_name}の記録"))
+                filter_choices.append((f"child_{child.id}", f"{child.child_name}の記録"))
 
         self.fields['filter_option'].choices = filter_choices
 

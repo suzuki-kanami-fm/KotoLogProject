@@ -38,7 +38,7 @@ class LoginForm(forms.Form):
         self.user_cache = authenticate(email=email, password=password) 
         
         if self.user_cache is None:
-            raise forms.ValidationError("認証に失敗しました")
+            raise forms.ValidationError("メールアドレスまたはパスワードが間違っています。")
         
         return self.changed_data
 

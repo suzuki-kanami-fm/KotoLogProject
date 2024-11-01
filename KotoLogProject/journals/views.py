@@ -144,16 +144,20 @@ class ChildcareJournalDetailView(View):
         return JsonResponse({'success': False, 'message': "処理に失敗しました。"})
     
 class HomeView(View):
-    def get(self, request):
-
-        # 公開されている育児記録
-        public_journals = get_top_n(ChildcareJournal.objects.filter(is_public=True).select_related('user'))
+    def get(self, request):       
                 
         if request.user.is_authenticated:
             family_users = User.objects.filter(family=request.user.family)
             children = Child.objects.filter(family=request.user.family)
 
             # 各セグメントのデータ取得            
+            
+             # 公開されている育児記録
+            public_journals = get_favorite_flagged_queryset(
+                get_top_n(ChildcareJournal.objects.filter(is_public=True).select_related('user')),
+                request.user
+            )
+            
             # 家族の育児記録
             family_journals = get_favorite_flagged_queryset(
                 get_top_n(ChildcareJournal.objects.filter(user__in=family_users).select_related('user')),
@@ -193,6 +197,8 @@ class HomeView(View):
                 'favorite_journals': favorite_journals,
             }
         else:
+             # 公開されている育児記録
+            public_journals = get_top_n(ChildcareJournal.objects.filter(is_public=True).select_related('user')) 
         
             #　閲覧回数の多い育児記録(公開されているもののみ)
             popular_journals = get_top_n(ChildcareJournal.objects.filter(is_public=True).annotate(count=Count('impression_count')).order_by('-count').select_related('user'))
@@ -218,8 +224,9 @@ class ChildcareJournalListView(View):
 
         # 検索フォームの値セット
         search_query = query_params.get('search_query')
-        filter_option = query_params.get('segment')
+        segment = query_params.get('segment')
         child_id = query_params.get('child')
+        filter_option = query_params.get('filter_option', '')
 
         # キーワード検索
         if search_query:
@@ -231,26 +238,36 @@ class ChildcareJournalListView(View):
                 default_filter = Q(is_public=True) | Q(user__family=user.family)
             else:
                 default_filter = Q(is_public=True)
-                
-            queryset = queryset.filter(default_filter)
-            
+    
             queryset = queryset.filter(
+                default_filter,
                 Q(title__icontains=search_query) | 
                 Q(content__icontains=search_query) | 
                 Q(childcarejournalhashtag__hashtag__hashtag_word__icontains=search_query)  # タグを含むフィルタリング
             ).distinct()
 
+        print("segment",segment)
+        print("filter_option",filter_option)
         # フィルタリング処理
-        if filter_option == 'public':
+        if segment == 'public' or filter_option == 'public':
             queryset = queryset.filter(is_public=True)
             
-        elif filter_option == 'family' and user.is_authenticated:
+        elif (segment == 'family' or filter_option == 'family') and user.is_authenticated:
 
             queryset = queryset.filter(user__family=user.family)
         
-        elif filter_option == 'child':
+        elif segment == 'child' or ('child' in filter_option):
 
-            param_child_id = query_params.get("child_id")
+            # 検索時はfilter_optionから抽出する
+            if  filter_option:
+                match = re.search(r'child_(\d+)', filter_option)  
+                if match:
+                    param_child_id = match.group(1)  # 抽出した ID
+            
+            # ホーム画面のセグメントを選択したときは、パラメータから子どもIDを取得する
+            else:
+                param_child_id = query_params.get("child_id")
+            
             # 子どもIDに基づいてフィルタリング
             queryset = queryset.filter(child_id=param_child_id)
         
@@ -276,7 +293,7 @@ class ChildcareJournalListView(View):
             'childcare_journals': queryset,
             'search_form': search_form,
         }
-
+        
         return render(request, 'journals/childcare_journal_list.html', context)
 
 

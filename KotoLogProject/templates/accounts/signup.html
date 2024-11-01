@@ -3,8 +3,7 @@
 <section class="signup container my-5 p-4 shadow-sm rounded bg-white">
     <form method="post" class="needs-validation" novalidate>
         {% csrf_token %}
-        {{ form.errors }}
-        
+
         <div class="mb-3">
             <label for="username" class="form-label">名前</label>
             <input type="text" name="username" id="username" value="{{ form.username.value|default:'' }}" class="form-control" required>
