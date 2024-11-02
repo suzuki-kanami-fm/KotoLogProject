@@ -84,12 +84,27 @@ class EditChildcareJournalView(View):
         form = ChildcareJournalForm(request.POST, request.FILES, instance=journal)
 
         if form.is_valid():
-            form.save()
+            # 画像の削除処理
+            delete_image_flag = request.POST.get("delete_image") == "1"
+            new_image = request.FILES.get("image_url")
+
+            # 1. 削除フラグが立っている または 現在の画像と新しい画像が異なる場合に削除処理
+            if delete_image_flag or (new_image and journal.image_url != new_image):
+                if journal.image_url:
+                    journal.image_url.delete()
+                    journal.image_url = None  # 画像削除後にフィールドを None に設定
+            
+            # 2. 新しい画像の登録処理
+            if new_image:
+                journal.image_url = new_image  # 新しい画像を設定
+
+            # すべての処理が完了したら保存
+            journal.save()
             messages.success(request, "育児記録が更新されました。")
             return redirect('home')
 
         return render(request, 'journals/edit_childcare_journal.html', {'form': form, 'journal': journal})
-
+    
 class ChildcareJournalDetailView(View):
     
     def get(self, request, journal_id):  

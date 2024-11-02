@@ -306,6 +306,13 @@ header .nav-item .btn-outline-secondary:hover{
 .errorlist{
     color:red;
 }
+.modal-body div{
+    width: 50%;
+}
+.modal-body div img{
+    width: 100%;
+    max-width: 400px;
+}
   @media screen and (max-width: 768px) {
     .nav-link .d-md-inline{
         width: 30px;
@@ -320,5 +327,8 @@ header .nav-item .btn-outline-secondary:hover{
     }
     .user-info{
         margin: 0 auto;
+    }
+    .modal-body div{
+        width: 100%;
     }
   }

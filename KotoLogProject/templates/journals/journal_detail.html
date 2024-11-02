@@ -1,6 +1,6 @@
 <!-- 育児記録詳細表示モーダルウィンドウ -->
 <div class="modal fade" id="journalModal" tabindex="-1" aria-labelledby="journalModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 id="modal-title" class="modal-title d-inline"></h5>
@@ -14,12 +14,12 @@
                 {% endif %}
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="閉じる"></button>
             </div>
-            <div class="modal-body d-flex justify-content-between">
+            <div class="modal-body d-sm-flex justify-content-between">
                 <div>
                     <p id="modal-content" class="mb-3"></p>
                 </div>
-                <div>
-                    <img id="modal-image" src="" alt="Journal Image/Video" style="width: 200px; height: auto;">
+                <div class="text-center">
+                    <img id="modal-image" src="" alt="Journal Image/Video">
                 </div>
             </div>
             <div class="modal-footer">
