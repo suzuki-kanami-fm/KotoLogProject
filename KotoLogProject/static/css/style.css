@@ -306,9 +306,6 @@ header .nav-item .btn-outline-secondary:hover{
 .errorlist{
     color:red;
 }
-.modal-body div{
-    width: 50%;
-}
 .modal-body div img{
     width: 100%;
     max-width: 400px;

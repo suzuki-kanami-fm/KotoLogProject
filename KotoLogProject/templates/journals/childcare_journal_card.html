@@ -13,8 +13,19 @@
                 </span>
 
             </h6>
-            {% if journal.image_url %}
-            <img src="{{ journal.image_url.url }}" class="card-img-top" alt="Journal Image" style="max-height: 200px; object-fit: cover;">
+             {% if journal.image_url %}
+                {% if journal.image_url.url|is_video %}
+                    <!-- 動画ファイルの場合は video タグを使用 -->
+                    <video poster class="card-img-top" style="max-height: 200px; object-fit: cover;">
+                        <source src="{{ journal.image_url.url }}" type="video/mp4">
+                        <source src="{{ journal.image_url.url }}" type="video/webm">
+                        <source src="{{ journal.image_url.url }}" type="video/ogg">
+                        お使いのブラウザは動画の再生をサポートしていません。
+                    </video>
+                {% else %}
+                    <!-- 画像ファイルの場合は img タグを使用 -->
+                    <img src="{{ journal.image_url.url }}" class="card-img-top" alt="Journal Image" style="max-height: 200px; object-fit: cover;">
+                {% endif %}
             {% endif %}
             <h5 class="card-title mb-2 text-muted">{{ journal.title }}({{ journal.published_on|date:"Y/m/d"  }})</h5>
             <p class="card-text card-context">{{ journal.content|truncatewords:20 }}</p>

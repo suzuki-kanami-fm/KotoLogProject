@@ -14,3 +14,10 @@ def generate_hsl_color(child_id):
     r, g, b = colorsys.hls_to_rgb(hue, lightness, saturation)
     r, g, b = int(r * 255), int(g * 255), int(b * 255)
     return f"rgb({r}, {g}, {b})"
+
+
+@register.filter
+def is_video(file_url):
+    """ファイルが動画かどうかを判定する"""
+    video_extensions = ['.mp4', '.webm', '.ogg']
+    return any(file_url.endswith(ext) for ext in video_extensions)

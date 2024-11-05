@@ -15,13 +15,15 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="閉じる"></button>
             </div>
             <div class="modal-body d-sm-flex justify-content-between">
-                <div>
+                <div class="col-md-6">
                     <p id="modal-content" class="mb-3"></p>
                 </div>
-                <div class="text-center">
+                <div class="col-md-6 text-center modal-media">
+                    <video id="modal-video" controls style="width: 100%; display: none;">
+                        </video>
                     <img id="modal-image" src="" alt="Journal Image/Video">
                 </div>
-            </div>
+            </div>            
             <div class="modal-footer">
                 <a href="#" id="edit-btn" class="btn btn-link">編集</a>
             </div>
@@ -32,6 +34,7 @@
 <script>
 $(document).ready(function() {
     const journalModal = $('#journalModal');
+    const supportedVideoFormats = ['.mp4', '.webm', '.ogg']; // 対応する動画形式を配列で指定
 
     journalModal.on('show.bs.modal', function(event) {
         const button = $(event.relatedTarget);
@@ -44,11 +47,18 @@ $(document).ready(function() {
             dataType: 'json',
             success: function(data) {
                 $('#modal-title').text(data.title + " (" + data.published_on + ")");
-                $('#modal-content').text(data.content);
-                if (data.image_url) {
-                    $('#modal-image').attr('src', data.image_url).show();
+                $('#modal-content').html(data.content.replace(/\n/g, '<br>')); // 改行を追加
+
+                const isVideo = supportedVideoFormats.some(format => data.image_url && data.image_url.endsWith(format));
+                if (isVideo) {
+                    $('#modal-video').attr('src', data.image_url).show();  // 動画を表示
+                    $('#modal-image').hide();
+                } else if (data.image_url) {
+                    $('#modal-image').attr('src', data.image_url).show();  // 画像を表示
+                    $('#modal-video').hide();
                 } else {
                     $('#modal-image').hide();
+                    $('#modal-video').hide();
                 }
 
                 // お気に入りボタンの設定
@@ -86,7 +96,7 @@ $(document).ready(function() {
                         success: function(result) {
                             if (result.success) {
                                 favoriteBtn.text(result.is_favorited ? "★" : "☆");
-                                favoriteBtn.attr('name', result.is_favorited ?'remove_from_favorites':'add_to_favorites');
+                                favoriteBtn.attr('name', result.is_favorited ? 'remove_from_favorites' : 'add_to_favorites');
                                 alert(result.message);
                             }
                         },
