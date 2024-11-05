@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
-from accounts.forms import SignupForm, LoginForm, UserEditForm, UserPageForm, ChildForm
+from accounts.forms import SignupForm, LoginForm, UserEditForm, UserPageForm, ChildForm,CustomPasswordChangeForm
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LogoutView, PasswordChangeView, PasswordChangeDoneView
@@ -289,11 +289,12 @@ class UserPageView(LoginRequiredMixin, View):
     
 class CustomPasswordChangeView(PasswordChangeView):
     template_name = 'accounts/password_change.html'
+    form_class = CustomPasswordChangeForm
 
     def form_valid(self, form):
         user = form.save()
         update_session_auth_hash(self.request, user)
-        return render(self.request,"accounts/password_change_done.html" )
+        return render(self.request, "accounts/password_change_done.html")
 
 class CustomPasswordChangeDoneView(LoginRequiredMixin,PasswordChangeDoneView):
     template_name = 'accounts/password_change_done.html'

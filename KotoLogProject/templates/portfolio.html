@@ -11,6 +11,11 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.min.js"></script>
     <title>KotoLog</title>
     <style>
+        h1 a img{transition:all 0.3s}
+        h1 a:hover img{
+          filter: drop-shadow(5px 5px 5px rgba(0, 0, 0, 0.2));
+        }
+
         /* カルーセル全体の高さとカードのレイアウト調整 */
         .carousel {
             position: relative;
@@ -61,21 +66,20 @@
         }
     </style>  
 </head>
-<body class="m-3" id="portfolio">
+<body class="px-3 py-5" id="portfolio">
     <h1 class="text-center">
         <a href="{% url 'home' %}">
             <img src="{% static "img/kotolog.png" %}" alt="KotoLog" width="250px">
         </a>
     </h1>
-    <section class="m-1">
+    <section class="mx-1 my-5">
         <h3>アプリの概要</h3>
         <p>「KotoLog」は、家族全員で育児に取り組める環境を作ることをコンセプトとし、子どもの日々の反応や起こった出来事を記録・共有できるアプリケーションです。「ママ・パパじゃないとできない・わからない」状況を減らすことを目指します。<br>
         KotoLogを使うことで、子どものトラブル等に対してどのように対処したか、その時々の子どもの行動や反応を記録し、<br>
         他のユーザーと共有することで、家族内外のユーザー同士で共感や解決策を見つけられるコミュニティを形成します。 
         </p>
-        <p class="text-end"><a href="{% url 'home' %}" class="btn btn-primary btn-lg">アプリへ</a></p>
     </section>      
-    <section class="m-1">
+    <section class="mx-1 my-5">
       <h3>機能紹介</h3>
       <div id="portfoliocarousel" class="carousel slide">
         <div class="carousel-indicators">
@@ -140,15 +144,15 @@
         </button>
       </div>
     </section>
-    <section class="m-1">
+    <section class="mx-1 my-5">
       <h3>作成資料</h3>
       <ul class="list-group  list-group-horizontal">
         <li class="list-group-item list-group-item-action"><a href="{% static "file/KotoLog企画書.pdf" %}">企画書</a></li>        
         <li class="list-group-item list-group-item-action"><a href="{% static "file/画面遷移図.drawio.pdf" %}">画面遷移図</a></li>
         <li class="list-group-item list-group-item-action"><a href="{% static "file/ER図.pdf" %}">ER図</a></li>
       </ul>
-
     </section>    
+    <p class="text-center"><a href="{% url 'home' %}" class="btn btn-primary btn-lg w-75">アプリへ</a></p>
 <script>
 $(document).ready(function(){
     $('#portfoliocarousel').carousel({

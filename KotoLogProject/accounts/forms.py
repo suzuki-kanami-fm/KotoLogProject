@@ -4,6 +4,7 @@ from django.contrib.auth.forms import (
 from accounts.models import (
     User, Child)
 from django.contrib.auth import authenticate
+from django.contrib.auth.forms import PasswordChangeForm
 
 class SignupForm(UserCreationForm):
     class Meta:
@@ -98,4 +99,10 @@ class ChildForm(forms.ModelForm):
             
             raise forms.ValidationError('この名前と生年月日の子どもはすでに登録されています。')
 
-        return cleaned_data        
+        return cleaned_data
+
+class CustomPasswordChangeForm(PasswordChangeForm):
+    def __init__(self, *args, **kwargs):
+        super(CustomPasswordChangeForm, self).__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control'})
