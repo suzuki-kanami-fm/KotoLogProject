@@ -202,7 +202,7 @@ class UserPageView(LoginRequiredMixin, View):
                         childcare_journal_id=OuterRef('id')
                     ).values('latest_accessed')[:1]  # その育児記録の最新のアクセス日時を取得
                 ),
-                is_favorite=Case(
+                is_favorited=Case(
                     When(favorite__user=user, then=Value(True)),
                     default=Value(False),
                     output_field=BooleanField()
@@ -211,20 +211,17 @@ class UserPageView(LoginRequiredMixin, View):
             .order_by('-latest_accessed')  # 最新のアクセス時間順に並べ替え
             .select_related('child')[:10]  # 必要な関連データを一緒に取得
         )
-
                 
         # ユーザが作成した育児記録を取得
         user_created_journals = ChildcareJournal.objects.filter(user=user).order_by('-published_on').annotate(
-            is_favorite=Case(
+            is_favorited=Case(
                 When(favorite__user=user, then=Value(True)),
                 default=Value(False),
                 output_field=BooleanField()
             )
         ).select_related('child')[:10]
         
-
         child_form = ChildForm()
-        
 
         # コンテキストに家族情報、子ども情報、フォームを追加
         context = {
