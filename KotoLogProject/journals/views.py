@@ -41,7 +41,10 @@ def get_favorite_flagged_queryset(queryset, user):
 
 ## 動画ファイルをMP4形式に変換する関数 ##
 def convert_video_to_mp4(file_path):
-    if file_path.lower().endswith('.mov'):
+    # 対象の拡張子を定義（webm, ogg, mov など）
+    valid_video_extensions = ('.mov', '.webm', '.ogg')
+
+    if file_path.lower().endswith(valid_video_extensions):
         try:
             # 出力ファイル名を変更してMP4にする（ユニークな名前を生成）
             base_name = os.path.splitext(file_path)[0]
@@ -81,10 +84,10 @@ class CreateChildcareJournalView(View):
                 return render(request, 'journals/create_childcare_journal.html', {'form': form})
             
             # 許可するファイル拡張子（画像および動画ファイル形式）
-            allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'mp4', 'mov']
+            allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'mp4', 'mov','.webm', '.ogg']
             file_extension = uploaded_file.name.split('.')[-1].lower()
             if file_extension not in allowed_extensions:
-                messages.error(request, "対応しているファイル形式は .jpg, .jpeg, .png, .gif, .mp4, .mov です。")
+                messages.error(request, "対応しているファイル形式は .jpg, .jpeg, .png, .gif, .mp4, .mov, .webm, .ogg です。")
                 return render(request, 'journals/create_childcare_journal.html', {'form': form})
 
             # ファイルの保存先を設定
@@ -155,12 +158,12 @@ class EditChildcareJournalView(View):
                     messages.error(request, f"ファイルサイズは{MAX_FILE_SIZE_MB}MB以下にしてください。")
                     return render(request, 'journals/edit_childcare_journal.html', {'form': form, 'journal': journal})
                 
-                allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'mp4', 'mov']
+                allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'mp4', 'mov','.webm', '.ogg']
                 file_extension = new_image.name.split('.')[-1].lower()
                 
                 # ファイル形式チェック
                 if file_extension not in allowed_extensions:
-                    messages.error(request, "対応しているファイル形式は .jpg, .jpeg, .png, .gif, .mp4, .mov です。")
+                    messages.error(request, "対応しているファイル形式は .jpg, .jpeg, .png, .gif, .mp4, .mov, .webm, .ogg です。")
                     return render(request, 'journals/edit_childcare_journal.html', {'form': form, 'journal': journal})
 
                 # ファイルの保存先を設定
