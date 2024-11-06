@@ -10,7 +10,7 @@
     </div>
     {% endif %}
 
-    <form method="POST" action="{% url 'journals:delete_childcare_journals' %}" onsubmit="return confirmDelete()">
+    <form method="POST" action="{% url 'journals:delete_childcare_journals' %}?{{ request.GET.urlencode }}" onsubmit="return confirmDelete()">
         {% csrf_token %}
         {% if user.is_authenticated %}
         <div class="d-flex justify-content-end">
