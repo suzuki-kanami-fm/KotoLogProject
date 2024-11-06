@@ -1,8 +1,8 @@
 {% extends 'common/base.html' %}
+{% load custom_filters %}
 {% block content %}
 <section id="create_childcare_journal" class="container mt-5 d-flex justify-content-center">
     <div class="col-md-8 col-lg-6">
-
         <form method="POST" action="" enctype="multipart/form-data" class="p-4 border rounded">
             {% csrf_token %}
 
@@ -33,13 +33,20 @@
 
             <div class="form-group mb-3">
                 <label for="image_url">画像または動画を選択</label>
-                
-                <!-- 削除フラグを持たせるための hidden フィールド -->
+
+                <!-- Hidden delete flag field -->
                 <input type="hidden" name="delete_image" id="delete_image" value="0">
                 
                 {% if journal.image_url %}
                     <div id="current-image" class="current-image">
-                        <img src="{{ journal.image_url.url }}" alt="Current Image" class="img-thumbnail" width="150" height="150">
+                        {% if journal.image_url.name|is_video %}
+                            <video controls class="img-thumbnail" width="150" height="150">
+                                <source src="{{ journal.image_url.url }}" type="video/mp4">
+                                お使いのブラウザは動画プレビューをサポートしていません。
+                            </video>
+                        {% else %}
+                            <img src="{{ journal.image_url.url }}" alt="Current Image" class="img-thumbnail" width="150" height="150">
+                        {% endif %}
                         <p>{{ journal.image_url.name }}</p>
                         <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete()">削除</button>
                     </div>
@@ -47,16 +54,23 @@
                     <p>現在画像が設定されていません。</p>
                 {% endif %}
                 
-                <input type="file" name="image_url" id="image_url" class="form-control mt-2" onchange="previewImage(event)">
-                <!-- プレビューエリア -->
+                <input type="file" name="image_url" id="image_url" class="form-control mt-2" onchange="previewMedia(event)">
+                <!-- Preview Area -->
                 <div id="image-preview" class="mt-3"></div>
             </div>
+
+            {% if messages %}
+                <div class="alert alert-success">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>      
+            {% endif %}
             
             <button type="submit" class="btn btn-primary w-100">更新</button>
             <a href="{% url 'home' %}" class="btn btn-link">戻る</a>
         </form>
-    </div>    
-
+    </div>
 </section>
 
 <script>
@@ -66,26 +80,55 @@ function confirmDelete() {
         document.getElementById("current-image").style.display = "none";
     }
 }
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector("form");
+    form.addEventListener("submit", function (event) {
+        let errorMessage = "";
+        const child = document.querySelector("select[name='child']").value;
+        const title = document.querySelector("input[name='title']").value;
+        const content = document.querySelector("textarea[name='content']").value;
 
-// 画像プレビューの表示処理
-function previewImage(event) {
+        if (!child) {
+            errorMessage += "子どもを選択してください。\n";
+        }
+        if (!title) {
+            errorMessage += "タイトルを入力してください。\n";
+        }
+        if (!content) {
+            errorMessage += "内容を入力してください。\n";
+        }
+
+        if (errorMessage) {
+            alert(errorMessage);
+            event.preventDefault(); // フォームの送信を停止
+        }
+    });
+});
+
+// 画像または動画のプレビュー表示
+function previewMedia(event) {
     const file = event.target.files[0];
     const previewContainer = document.getElementById("image-preview");
-    
-    // 既存のプレビューをクリア
-    previewContainer.innerHTML = "";
+    previewContainer.innerHTML = "";  // 
 
     if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
+        const fileType = file.type;
+        if (fileType.startsWith("image/")) {
             const img = document.createElement("img");
-            img.src = e.target.result;
+            img.src = URL.createObjectURL(file);
             img.className = "img-thumbnail";
             img.width = 150;
             img.height = 150;
             previewContainer.appendChild(img);
-        };
-        reader.readAsDataURL(file);
+        } else if (fileType.startsWith("video/")) {
+            const video = document.createElement("video");
+            video.src = URL.createObjectURL(file);
+            video.className = "img-thumbnail";
+            video.width = 150;
+            video.height = 150;
+            video.controls = true;
+            previewContainer.appendChild(video);
+        }
     }
 }
 </script>

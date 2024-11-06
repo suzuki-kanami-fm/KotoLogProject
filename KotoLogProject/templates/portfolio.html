@@ -64,6 +64,17 @@
             background: #55b8c2;
             color: white;
         }
+        .btn{
+          background:#ff9284;
+          color:#FFF;
+          transition:0.3s all;
+        }
+         .btn:hover{
+          background:#ff9284;
+          color:#FFF;
+          transform: scale(1.05);
+          box-shadow: 0 0 3px 3px rgba(0, 0, 0, 0.2);
+         }
     </style>  
 </head>
 <body class="px-3 py-5" id="portfolio">
@@ -152,7 +163,7 @@
         <li class="list-group-item list-group-item-action"><a href="{% static "file/ER図.pdf" %}" target="_blank">ER図</a></li>
       </ul>
     </section>    
-    <p class="text-center"><a href="{% url 'home' %}" class="btn btn-primary btn-lg w-75">アプリへ</a></p>
+    <p class="text-center"><a href="{% url 'home' %}" class="btn btn-lg w-25">アプリへ</a></p>
 <script>
 $(document).ready(function(){
     $('#portfoliocarousel').carousel({

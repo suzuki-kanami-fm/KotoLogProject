@@ -11,12 +11,18 @@ from KotoLogProject.forms import SearchJournalForm
 from django.db.models import Prefetch, Count, Case, When, Value, BooleanField,Q
 from django.utils import timezone
 from django.contrib import messages
+from django.core.validators import FileExtensionValidator
+from django.conf import settings
 import re
 import hashlib
+import subprocess
+import os
+import uuid
 
+# アップロードファイルサイズ
+MAX_FILE_SIZE_MB = 10  # 10MBに設定
 
 ## 共通関数 ##
-
 # 上位n件を取得
 def get_top_n(queryset, n=10):
     return queryset[:n]
@@ -30,48 +36,93 @@ def get_favorite_flagged_queryset(queryset, user):
             output_field=BooleanField()
         )
     ).select_related('child')
-    
+
+## 動画ファイルをMP4形式に変換する関数 ##
+def convert_video_to_mp4(file_path):
+    if file_path.lower().endswith('.mov'):
+        try:
+            # 出力ファイル名を変更してMP4にする（ユニークな名前を生成）
+            base_name = os.path.splitext(file_path)[0]
+            unique_mp4_file_path = f"{base_name}_{uuid.uuid4().hex}.mp4"
+            
+            # ffmpegを使用してMOVをMP4に変換
+            command = f'ffmpeg -i "{file_path}" -vcodec h264 -acodec aac "{unique_mp4_file_path}"'
+            subprocess.run(command, shell=True, check=True)
+            
+            # 変換後、元のMOVファイルを削除
+            os.remove(file_path)
+            
+            return unique_mp4_file_path  # 成功した場合、新しいMP4ファイルのパスを返す
+        except subprocess.CalledProcessError:
+            return None  # 変換に失敗した場合
+    return file_path  # MOV以外の形式はそのまま返す
+
+
 class CreateChildcareJournalView(View):
     def get(self, request):
-        # ユーザーに紐づく子供がいない場合はマイページへリダイレクト
         children = Child.objects.filter(family=request.user.family)
         if not children.exists():
             messages.error(request, '育児記録の作成前に子ども情報を登録してください。')
             return redirect('accounts:user_page')
         
-        # フォームにユーザーを渡して表示
         form = ChildcareJournalForm(user=request.user)
         return render(request, 'journals/create_childcare_journal.html', {'form': form})
 
     def post(self, request):
-        # POSTリクエストでフォームを送信
         form = ChildcareJournalForm(request.POST, request.FILES)
-        
+
+        # ファイルチェック
+        uploaded_file = request.FILES.get('image_url')
+        if uploaded_file:
+            if uploaded_file.size > MAX_FILE_SIZE_MB * 1024 * 1024:
+                messages.error(request, f"ファイルサイズは{MAX_FILE_SIZE_MB}MB以下にしてください。")
+                return render(request, 'journals/create_childcare_journal.html', {'form': form})
+            
+            # 許可するファイル拡張子（画像および動画ファイル形式）
+            allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'mp4', 'mov']
+            file_extension = uploaded_file.name.split('.')[-1].lower()
+            if file_extension not in allowed_extensions:
+                messages.error(request, "対応しているファイル形式は .jpg, .jpeg, .png, .gif, .mp4, .mov です。")
+                return render(request, 'journals/create_childcare_journal.html', {'form': form})
+
+            # ファイルの保存先を設定
+            file_path = os.path.join(settings.MEDIA_ROOT, 'uploads', uploaded_file.name)
+            with open(file_path, 'wb') as f:
+                for chunk in uploaded_file.chunks():
+                    f.write(chunk)
+            
+            # 動画ファイルの変換（MOVの場合）
+            converted_file_path = convert_video_to_mp4(file_path)
+            if converted_file_path is None:
+                messages.error(request, "動画の変換に失敗しました。再度お試しください。")
+                return render(request, 'journals/create_childcare_journal.html', {'form': form})
+
+            # 変換後のファイルパスをフォームに渡す
+            uploaded_file.name = os.path.basename(converted_file_path)
+
         if form.is_valid():
             # フォームから育児記録を保存
             childcare_journal = form.save(commit=False)
-            childcare_journal.user = request.user  # 現在のユーザーを設定
+            childcare_journal.user = request.user # 現在のユーザーを設定
             childcare_journal.save()
-            
             # 本文からハッシュタグを抽出
             content = form.cleaned_data['content']
             hashtags = re.findall(r'#(\w+)', content)
-            
+
             for hashtag_word in hashtags:
                 # ハッシュタグをデータベースに保存（存在しない場合は新規作成）
                 hashtag, created = Hashtag.objects.get_or_create(hashtag_word=hashtag_word)
-                
                 # ChildcareJournalHashtagモデルに関連付け
                 ChildcareJournalHashtag.objects.get_or_create(
                     childcare_journal=childcare_journal,
                     hashtag=hashtag
                 )
-            
             # ホームページにリダイレクト
             return redirect('home')
-        
+
         # バリデーションエラーが発生した場合は再度フォームを表示
         return render(request, 'journals/create_childcare_journal.html', {'form': form})
+
 
 class EditChildcareJournalView(View):
     def get(self, request, journal_id):
@@ -84,19 +135,46 @@ class EditChildcareJournalView(View):
         form = ChildcareJournalForm(request.POST, request.FILES, instance=journal)
 
         if form.is_valid():
-            # 画像の削除処理
             delete_image_flag = request.POST.get("delete_image") == "1"
             new_image = request.FILES.get("image_url")
-
-            # 1. 削除フラグが立っている または 現在の画像と新しい画像が異なる場合に削除処理
+            
+            #  削除フラグが立っている または 現在の画像と新しい画像が異なる場合に削除処理
             if delete_image_flag or (new_image and journal.image_url != new_image):
                 if journal.image_url:
                     journal.image_url.delete()
-                    journal.image_url = None  # 画像削除後にフィールドを None に設定
-            
-            # 2. 新しい画像の登録処理
+                    journal.image_url = None
+                    
+            # 新しい画像の登録処理
             if new_image:
-                journal.image_url = new_image  # 新しい画像を設定
+                journal.image_url = new_image
+            
+                # ファイルサイズチェック
+                if new_image.size > MAX_FILE_SIZE_MB * 1024 * 1024:
+                    messages.error(request, f"ファイルサイズは{MAX_FILE_SIZE_MB}MB以下にしてください。")
+                    return render(request, 'journals/edit_childcare_journal.html', {'form': form, 'journal': journal})
+                
+                allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'mp4', 'mov']
+                file_extension = new_image.name.split('.')[-1].lower()
+                
+                # ファイル形式チェック
+                if file_extension not in allowed_extensions:
+                    messages.error(request, "対応しているファイル形式は .jpg, .jpeg, .png, .gif, .mp4, .mov です。")
+                    return render(request, 'journals/edit_childcare_journal.html', {'form': form, 'journal': journal})
+
+                # ファイルの保存先を設定
+                file_path = os.path.join(settings.MEDIA_ROOT, 'uploads', new_image.name)
+                with open(file_path, 'wb') as f:
+                    for chunk in new_image.chunks():
+                        f.write(chunk)
+
+                # 動画ファイルの変換（MOVの場合）
+                converted_file_path = convert_video_to_mp4(file_path)
+                if converted_file_path is None:
+                    messages.error(request, "動画の変換に失敗しました。再度お試しください。")
+                    return render(request, 'journals/edit_childcare_journal.html', {'form': form, 'journal': journal})
+
+                # 変換後のファイルパスをフォームに渡す
+                new_image.name = os.path.basename(converted_file_path)                
 
             # すべての処理が完了したら保存
             journal.save()
@@ -104,7 +182,7 @@ class EditChildcareJournalView(View):
             return redirect('home')
 
         return render(request, 'journals/edit_childcare_journal.html', {'form': form, 'journal': journal})
-    
+
 class ChildcareJournalDetailView(View):
     
     def get(self, request, journal_id):  

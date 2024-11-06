@@ -19,5 +19,5 @@ def generate_hsl_color(child_id):
 @register.filter
 def is_video(file_url):
     """ファイルが動画かどうかを判定する"""
-    video_extensions = ['.mp4', '.webm', '.ogg']
+    video_extensions = ['.mp4', '.webm', '.ogg','.mov']
     return any(file_url.endswith(ext) for ext in video_extensions)
