@@ -9,8 +9,8 @@ header a{
 
 header .search-form {
     background: #FFF;
-    padding: 0px 5px;
-    border-radius: 20px;
+    padding: 5px;
+    border-radius: 25px;
     margin: 10px 5px;
     font-size: 14px;
 }
@@ -22,6 +22,8 @@ header .search-form input{
 }
 header .search-form select{
     min-width: 150px;
+    border-radius: 0;
+    border-left: 1px solid #aaa;
 }
 header .search-form img{
     width: 30px;
@@ -310,6 +312,13 @@ header .nav-item .btn-outline-secondary:hover{
     width: 100%;
     max-width: 400px;
 }
+header .journal_title a{
+    padding-left: 10px;
+}
+header .nav-item{
+    padding: 0 5px;
+}
+
   @media screen and (max-width: 768px) {
     .nav-link .d-md-inline{
         width: 30px;

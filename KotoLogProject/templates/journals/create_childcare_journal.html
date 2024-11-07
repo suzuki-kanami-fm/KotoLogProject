@@ -4,7 +4,7 @@
 <section id="create_childcare_journal" class="container mt-5 d-flex justify-content-center">
     <div class="col-md-8 col-lg-6">
 
-        <form method="POST" action="" enctype="multipart/form-data" class="p-4 border rounded">
+        <form method="POST" action="" enctype="multipart/form-data" class="p-4 border rounded" id="journal_form">
             {% csrf_token %}
 
             <div class="form-group mb-3">
@@ -59,7 +59,7 @@ function confirmDelete() {
     }
 }
 document.addEventListener("DOMContentLoaded", function () {
-    const form = document.querySelector("form");
+    const form = document.getElementById("journal_form");
     form.addEventListener("submit", function (event) {
         let errorMessage = "";
         const child = document.querySelector("select[name='child']").value;
