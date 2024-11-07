@@ -7,8 +7,8 @@ $(document).ready(function() {
         const trackWidth = $carouselTrack.width();
         const maxScroll = trackWidth - $items.length * itemWidth;
 
-        // カードが1枚しかない場合、両方のボタンを非表示にする
-        if ($items.length <= 1) {
+        // カードが1枚しかない場合、または、すべてのカードが画面内に収まっている場合、両方のボタンを非表示にする
+        if (($items.length <= 1)|| ($items.length * itemWidth <= trackWidth)) {
             $prevButton.hide();
             $nextButton.hide();
             return;  // ここで終了して、他の条件はチェックしない
@@ -52,7 +52,7 @@ $(document).ready(function() {
         }
 
         // ボタンの表示・非表示を更新
-        setTimeout(() => toggleButtonVisibility($carouselTrack, $prevButton, $nextButton), 400);
+        setTimeout(() => toggleButtonVisibility($carouselTrack, $prevButton, $nextButton), 450);
     }
 
     // ボタンのクリックイベント

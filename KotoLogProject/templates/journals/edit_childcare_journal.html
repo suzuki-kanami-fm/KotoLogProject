@@ -24,6 +24,7 @@
             <div class="form-group mb-3">
                 {{ form.content.label_tag }}
                 {{ form.content }}
+                <div id="char-count">残り {{ form.content.max_length }} 文字</div>
             </div>
 
             <div class="form-group mb-3">
@@ -82,6 +83,25 @@ function confirmDelete() {
 }
 document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("journal_form");
+    const contentField = document.getElementById("id_content");  // テキストエリアのID
+    const charCountDisplay = document.getElementById("char-count");
+    const maxLength = contentField.getAttribute("maxlength");  // maxlength属性を取得
+
+    // 初期文字数表示
+    const initialRemaining = maxLength - contentField.value.length;
+    charCountDisplay.textContent = `残り ${initialRemaining} 文字`;
+
+    // 入力時に残り文字数を更新
+    contentField.addEventListener("input", function() {
+        const remaining = maxLength - contentField.value.length;
+        charCountDisplay.textContent = `残り ${remaining} 文字`;
+        if (remaining < 20) {
+            charCountDisplay.style.color = "red";  // 文字数超過で赤色表示
+        } else {
+            charCountDisplay.style.color = "black";  // 通常色
+        }
+    });
+
     form.addEventListener("submit", function (event) {
         let errorMessage = "";
         const child = document.querySelector("select[name='child']").value;

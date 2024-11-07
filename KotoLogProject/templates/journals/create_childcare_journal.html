@@ -25,6 +25,7 @@
             <div class="form-group mb-3">
                 {{ form.content.label_tag }}  <!-- 内容ラベル -->
                 {{ form.content }}
+                <div id="char-count">残り 2000 文字</div>
             </div>
 
             <div class="form-group mb-3">
@@ -60,6 +61,20 @@ function confirmDelete() {
 }
 document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("journal_form");
+
+    const contentField = document.getElementById("id_content");  
+    const charCountDisplay = document.getElementById("char-count");
+
+    contentField.addEventListener("input", function() {
+        const remaining = 2000 - contentField.value.length;
+        charCountDisplay.textContent = `残り ${remaining} 文字`;
+        if (remaining < 20) {
+            charCountDisplay.style.color = "red";  // 文字数超過で赤色表示
+        } else {
+            charCountDisplay.style.color = "black";  // 通常色に戻す
+        }
+    });
+
     form.addEventListener("submit", function (event) {
         let errorMessage = "";
         const child = document.querySelector("select[name='child']").value;
