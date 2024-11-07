@@ -50,13 +50,21 @@ $(document).ready(function() {
                 $('#modal-content').html(data.content.replace(/\n/g, '<br>')); // 改行を追加
 
                 const isVideo = supportedVideoFormats.some(format => data.image_url && data.image_url.endsWith(format));
+                const modalBody = $('.modal-body');
+                
                 if (isVideo) {
+                    modalBody.removeClass('full-width');
+                    $('.modal-media').hide().show();
                     $('#modal-video').attr('src', data.image_url).show();  // 動画を表示
                     $('#modal-image').hide();
                 } else if (data.image_url) {
+                    modalBody.removeClass('full-width');
+                    $('.modal-media').hide().show();
                     $('#modal-image').attr('src', data.image_url).show();  // 画像を表示
                     $('#modal-video').hide();
                 } else {
+                    modalBody.addClass('full-width');
+                    $('.modal-media').hide();
                     $('#modal-image').hide();
                     $('#modal-video').hide();
                 }
